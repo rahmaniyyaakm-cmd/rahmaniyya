@@ -3,13 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rahmaniyya Public School - Ultimate System</title>
+<title>Rahmaniyya Public School</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body{margin:0;font-family:Poppins;background:#f4f6f9}
+.topbar{background:#0aa;color:white;padding:8px 20px;display:flex;justify-content:space-between}
+header{background:white;padding:15px;border-bottom:1px solid #ddd;text-align:center}
+nav{background:#002147;padding:12px;text-align:center}
+nav a{color:white;margin:0 12px;text-decoration:none;cursor:pointer}
+.hero{height:300px;background:#0b3d91;color:white;display:flex;align-items:center;justify-content:center}
+.noticebar{background:#0aa;color:white;padding:10px}
+.section{display:none;padding:30px}
+.active{display:block}
+.card{background:white;padding:15px;margin:10px;border-radius:8px}
+.dropdown-content{display:none;background:#00152d;position:absolute}
+.dropdown{display:inline-block;position:relative}
+.dropdown-content a{display:block;padding:10px;color:white}
+footer{background:#002147;color:white;text-align:center;padding:20px}
+</style>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyANxmeM4VQS44Y0aUYJ4t5wbC5m6QciWhI",
@@ -18,140 +34,97 @@ const firebaseConfig = {
   projectId: "rahmaniyya-f4b30",
   storageBucket: "rahmaniyya-f4b30.firebasestorage.app",
   messagingSenderId: "315271183077",
-  appId: "1:315271183077:web:6cd14d370b9dcb7287b20c",
-  measurementId: "G-ZXCTJWRLPM"
+  appId: "1:315271183077:web:6cd14d370b9dcb7287b20c"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const auth = getAuth(app);
-const storage = getStorage(app);
-
-// LOGIN
-window.login = function(){
-  signInWithEmailAndPassword(auth,email.value,password.value)
-  .then(()=> alert('Login Success'))
-  .catch(e=> alert(e.message));
-}
 
 // NOTICE
-const noticeRef = ref(db,"notices");
-window.addNotice = ()=> push(noticeRef,{t:title.value,c:content.value});
+const noticeRef=ref(db,"notices");
 onValue(noticeRef,s=>{
-  let d=s.val(), html="";
-  for(let i in d){ html+=`<div class='card'><h3>${d[i].t}</h3><p>${d[i].c}</p></div>` }
-  noticeList.innerHTML=html;
+ let d=s.val(),html="";
+ for(let i in d){ html+=d[i].text+" | " }
+ notices.innerHTML=html;
 });
 
-// STUDENTS + ID CARD
-const studentRef = ref(db,"students");
-window.addStudent = async function(){
-  const file = photo.files[0];
-  const storageRef = sRef(storage,'students/'+file.name);
-  await uploadBytes(storageRef,file);
-  const url = await getDownloadURL(storageRef);
-
-  push(studentRef,{name:sname.value,class:sclass.value,photo:url});
+// PAGE SWITCH
+window.showPage = function(id){
+ document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
 }
 
-onValue(studentRef,s=>{
-  let d=s.val(), html="";
-  for(let i in d){
-    html+=`<div class='card'>
-      <img src='${d[i].photo}' width='80'><br>
-      ${d[i].name} (${d[i].class})
-      <button onclick="generateID('${d[i].name}','${d[i].class}','${d[i].photo}')">Generate ID</button>
-    </div>`
-  }
-  students.innerHTML=html;
-});
-
-window.generateID = function(name,cls,photo){
-  idcard.innerHTML = `
-    <div style='border:2px solid black;padding:10px;width:250px'>
-      <h3>School ID Card</h3>
-      <img src='${photo}' width='80'><br>
-      <b>${name}</b><br>
-      Class: ${cls}
-    </div>`;
+// DROPDOWN CLICK
+window.toggleMenu = function(id){
+ let el=document.getElementById(id);
+ el.style.display = el.style.display==='block'?'none':'block';
 }
-
-// RESULT SYSTEM (TIME LOCK)
-const resultRef = ref(db,"results");
-
-window.publishResult = function(){
-  const releaseTime = new Date(rtime.value).getTime();
-  push(resultRef,{name:rname.value,marks:rmarks.value,release:releaseTime});
-}
-
-onValue(resultRef,s=>{
-  let d=s.val(), html="";
-  const now = Date.now();
-  for(let i in d){
-    if(now >= d[i].release){
-      html += `<div class='card'>${d[i].name}: ${d[i].marks}</div>`;
-    }
-  }
-  results.innerHTML = html;
-});
-
 </script>
-
-<style>
-body{font-family:Arial;margin:0;background:#f4f6f9}
-header{background:#002147;color:white;padding:15px;text-align:center}
-nav{background:#00152d;padding:10px;text-align:center}
-nav a{color:white;margin:10px}
-section{padding:20px}
-.card{background:white;padding:10px;margin:10px;border-radius:8px}
-input,textarea{width:100%;margin:5px;padding:8px}
-button{padding:8px;background:#002147;color:white;border:none}
-</style>
 </head>
 
 <body>
-<header><h1>Rahmaniyya Public School</h1></header>
+
+<div class="topbar">
+<div>📧 rahmaniyyaakm@gmail.com</div>
+<div>04931 2027107 | +91 9400857635</div>
+</div>
+
+<header>
+<img src="log rah.png" height="60"><br>
+<b>RAHMANIYYA PUBLIC SCHOOL</b>
+</header>
 
 <nav>
-<a href="#">Home</a>
-<a href="#login">Admin</a>
-<a href="#students">Students</a>
-<a href="#results">Results</a>
+<a onclick="showPage('home')">Home</a>
+
+<div class="dropdown">
+<a onclick="toggleMenu('aboutMenu')">About ▾</a>
+<div id="aboutMenu" class="dropdown-content">
+<a onclick="showPage('profile')">School Profile</a>
+<a onclick="showPage('vision')">Vision & Mission</a>
+<a onclick="showPage('milestones')">Milestones</a>
+</div>
+</div>
+
+<div class="dropdown">
+<a onclick="toggleMenu('acadMenu')">Academics ▾</a>
+<div id="acadMenu" class="dropdown-content">
+<a onclick="showPage('lkg')">LKG</a>
+<a onclick="showPage('ukg')">UKG</a>
+<a onclick="showPage('class1')">Class I</a>
+<a onclick="showPage('class2')">Class II</a>
+</div>
+</div>
+
+<a onclick="showPage('students')">Student Affairs</a>
+<a onclick="showPage('gallery')">Gallery</a>
 </nav>
 
-<section id="login">
-<h2>Admin Login</h2>
-<input id="email" placeholder="Email">
-<input id="password" type="password">
-<button onclick="login()">Login</button>
-</section>
+<div class="hero">Welcome to Rahmaniyya Public School</div>
+<div class="noticebar" id="notices">Loading...</div>
 
-<section>
-<h2>Notice Board</h2>
-<div id="noticeList"></div>
-<input id="title" placeholder="Title">
-<textarea id="content"></textarea>
-<button onclick="addNotice()">Post</button>
-</section>
+<!-- HOME -->
+<div id="home" class="section active"><h2>Home</h2><p>Welcome page content</p></div>
 
-<section id="students">
-<h2>Student + ID Card</h2>
-<div id="students"></div>
-<input id="sname" placeholder="Name">
-<input id="sclass" placeholder="Class">
-<input type="file" id="photo">
-<button onclick="addStudent()">Add Student</button>
-<div id="idcard"></div>
-</section>
+<!-- ABOUT -->
+<div id="profile" class="section"><h2>School Profile</h2><p>Demo profile content...</p></div>
+<div id="vision" class="section"><h2>Vision & Mission</h2><p>🎯 Vision: Excellence<br>🚀 Mission: Innovation</p></div>
+<div id="milestones" class="section"><h2>Milestones</h2><p>🏆 25 Years...</p></div>
 
-<section id="results">
-<h2>Result Publishing</h2>
-<div id="results"></div>
-<input id="rname" placeholder="Student Name">
-<input id="rmarks" placeholder="Marks">
-<input type="datetime-local" id="rtime">
-<button onclick="publishResult()">Publish (Timed)</button>
-</section>
+<!-- ACADEMICS -->
+<div id="lkg" class="section"><h2>LKG</h2><p>Syllabus...</p></div>
+<div id="ukg" class="section"><h2>UKG</h2><p>Syllabus...</p></div>
+<div id="class1" class="section"><h2>Class I</h2><p>Syllabus...</p></div>
+<div id="class2" class="section"><h2>Class II</h2><p>Syllabus...</p></div>
+
+<!-- STUDENTS -->
+<div id="students" class="section"><h2>Clubs</h2><p>Club details...</p></div>
+
+<!-- GALLERY -->
+<div id="gallery" class="section"><h2>Gallery</h2><p>Images...</p></div>
+
+<footer>© 2026 Rahmaniyya Public School</footer>
 
 </body>
 </html>
+
