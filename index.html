@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,23 +10,26 @@
 <style>
 body{margin:0;font-family:Poppins;background:#f4f6f9}
 .topbar{background:#0aa;color:white;padding:8px 20px;display:flex;justify-content:space-between}
-header{background:white;padding:15px;border-bottom:1px solid #ddd;text-align:center}
+header{text-align:center;background:white;padding:15px}
 nav{background:#002147;padding:12px;text-align:center}
-nav a{color:white;margin:0 12px;text-decoration:none;cursor:pointer}
-.hero{height:300px;background:#0b3d91;color:white;display:flex;align-items:center;justify-content:center}
+nav a{color:white;margin:0 10px;cursor:pointer}
+.hero{height:250px;background:#0b3d91;color:white;display:flex;align-items:center;justify-content:center}
 .noticebar{background:#0aa;color:white;padding:10px}
 .section{display:none;padding:30px}
 .active{display:block}
 .card{background:white;padding:15px;margin:10px;border-radius:8px}
-.dropdown-content{display:none;background:#00152d;position:absolute}
 .dropdown{display:inline-block;position:relative}
+.dropdown-content{display:none;position:absolute;background:#00152d}
 .dropdown-content a{display:block;padding:10px;color:white}
 footer{background:#002147;color:white;text-align:center;padding:20px}
+button{padding:8px;background:#002147;color:white;border:none}
 </style>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyANxmeM4VQS44Y0aUYJ4t5wbC5m6QciWhI",
@@ -39,23 +43,54 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
+const storage = getStorage(app);
+
+// LOGIN
+window.login = ()=> signInWithEmailAndPassword(auth,email.value,password.value)
+.then(()=>alert('Logged in')).catch(e=>alert(e.message));
+
+// SLIDER
+const sliderRef=ref(db,"slider");
+window.uploadSlider=async()=>{
+ let f=slider.files[0];
+ let r=sRef(storage,'slider/'+f.name);
+ await uploadBytes(r,f);
+ let url=await getDownloadURL(r);
+ push(sliderRef,{url});
+}
+onValue(sliderRef,s=>{
+ let d=s.val(),html="";
+ for(let i in d){ html+=`<img src='${d[i].url}' height='150'>` }
+ sliderView.innerHTML=html;
+});
 
 // NOTICE
 const noticeRef=ref(db,"notices");
+window.addNotice=()=>push(noticeRef,{text:notice.value});
 onValue(noticeRef,s=>{
  let d=s.val(),html="";
  for(let i in d){ html+=d[i].text+" | " }
  notices.innerHTML=html;
 });
 
+// GALLERY
+window.uploadGallery=async()=>{
+ let f=galleryFile.files[0];
+ let r=sRef(storage,'gallery/'+f.name);
+ await uploadBytes(r,f);
+ let url=await getDownloadURL(r);
+ gallery.innerHTML+=`<img src='${url}' width='120'>`;
+}
+
 // PAGE SWITCH
-window.showPage = function(id){
+window.showPage=id=>{
  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
  document.getElementById(id).classList.add('active');
 }
 
 // DROPDOWN CLICK
-window.toggleMenu = function(id){
+window.toggleMenu=id=>{
  let el=document.getElementById(id);
  el.style.display = el.style.display==='block'?'none':'block';
 }
@@ -70,7 +105,7 @@ window.toggleMenu = function(id){
 </div>
 
 <header>
-<img src="logo rah.png" height="60"><br>
+<img src="log rah.png" height="60"><br>
 <b>RAHMANIYYA PUBLIC SCHOOL</b>
 </header>
 
@@ -97,17 +132,19 @@ window.toggleMenu = function(id){
 </div>
 
 <a onclick="showPage('students')">Student Affairs</a>
-<a onclick="showPage('gallery')">Gallery</a>
+<a onclick="showPage('galleryPage')">Gallery</a>
 </nav>
 
 <div class="hero">Welcome to Rahmaniyya Public School</div>
+
+<div id="sliderView"></div>
 <div class="noticebar" id="notices">Loading...</div>
 
 <!-- HOME -->
-<div id="home" class="section active"><h2>Home</h2><p>Welcome page content</p></div>
+<div id="home" class="section active"><h2>Home</h2><p>Welcome content</p></div>
 
 <!-- ABOUT -->
-<div id="profile" class="section"><h2>School Profile</h2><p>Demo profile content...</p></div>
+<div id="profile" class="section"><h2>School Profile</h2><p>Demo profile...</p></div>
 <div id="vision" class="section"><h2>Vision & Mission</h2><p>🎯 Vision: Excellence<br>🚀 Mission: Innovation</p></div>
 <div id="milestones" class="section"><h2>Milestones</h2><p>🏆 25 Years...</p></div>
 
@@ -121,7 +158,28 @@ window.toggleMenu = function(id){
 <div id="students" class="section"><h2>Clubs</h2><p>Club details...</p></div>
 
 <!-- GALLERY -->
-<div id="gallery" class="section"><h2>Gallery</h2><p>Images...</p></div>
+<div id="galleryPage" class="section">
+<h2>Gallery</h2>
+<input type="file" id="galleryFile">
+<button onclick="uploadGallery()">Upload</button>
+<div id="gallery"></div>
+</div>
+
+<!-- ADMIN -->
+<div class="section">
+<h2>Admin Panel</h2>
+<input id="email" placeholder="Email">
+<input id="password" type="password">
+<button onclick="login()">Login</button>
+
+<h3>Upload Slider</h3>
+<input type="file" id="slider">
+<button onclick="uploadSlider()">Upload</button>
+
+<h3>Add Notification</h3>
+<input id="notice">
+<button onclick="addNotice()">Add</button>
+</div>
 
 <footer>© 2026 Rahmaniyya Public School</footer>
 
