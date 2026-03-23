@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rahmaniyya Public School - Ultimate System</title>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyANxmeM4VQS44Y0aUYJ4t5wbC5m6QciWhI",
+  authDomain: "rahmaniyya-f4b30.firebaseapp.com",
+  databaseURL: "https://rahmaniyya-f4b30-default-rtdb.firebaseio.com",
+  projectId: "rahmaniyya-f4b30",
+  storageBucket: "rahmaniyya-f4b30.firebasestorage.app",
+  messagingSenderId: "315271183077",
+  appId: "1:315271183077:web:6cd14d370b9dcb7287b20c",
+  measurementId: "G-ZXCTJWRLPM"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+const storage = getStorage(app);
+
+// LOGIN
+window.login = function(){
+  signInWithEmailAndPassword(auth,email.value,password.value)
+  .then(()=> alert('Login Success'))
+  .catch(e=> alert(e.message));
+}
+
+// NOTICE
+const noticeRef = ref(db,"notices");
+window.addNotice = ()=> push(noticeRef,{t:title.value,c:content.value});
+onValue(noticeRef,s=>{
+  let d=s.val(), html="";
+  for(let i in d){ html+=`<div class='card'><h3>${d[i].t}</h3><p>${d[i].c}</p></div>` }
+  noticeList.innerHTML=html;
+});
+
+// STUDENTS + ID CARD
+const studentRef = ref(db,"students");
+window.addStudent = async function(){
+  const file = photo.files[0];
+  const storageRef = sRef(storage,'students/'+file.name);
+  await uploadBytes(storageRef,file);
+  const url = await getDownloadURL(storageRef);
+
+  push(studentRef,{name:sname.value,class:sclass.value,photo:url});
+}
+
+onValue(studentRef,s=>{
+  let d=s.val(), html="";
+  for(let i in d){
+    html+=`<div class='card'>
+      <img src='${d[i].photo}' width='80'><br>
+      ${d[i].name} (${d[i].class})
+      <button onclick="generateID('${d[i].name}','${d[i].class}','${d[i].photo}')">Generate ID</button>
+    </div>`
+  }
+  students.innerHTML=html;
+});
+
+window.generateID = function(name,cls,photo){
+  idcard.innerHTML = `
+    <div style='border:2px solid black;padding:10px;width:250px'>
+      <h3>School ID Card</h3>
+      <img src='${photo}' width='80'><br>
+      <b>${name}</b><br>
+      Class: ${cls}
+    </div>`;
+}
+
+// RESULT SYSTEM (TIME LOCK)
+const resultRef = ref(db,"results");
+
+window.publishResult = function(){
+  const releaseTime = new Date(rtime.value).getTime();
+  push(resultRef,{name:rname.value,marks:rmarks.value,release:releaseTime});
+}
+
+onValue(resultRef,s=>{
+  let d=s.val(), html="";
+  const now = Date.now();
+  for(let i in d){
+    if(now >= d[i].release){
+      html += `<div class='card'>${d[i].name}: ${d[i].marks}</div>`;
+    }
+  }
+  results.innerHTML = html;
+});
+
+</script>
+
+<style>
+body{font-family:Arial;margin:0;background:#f4f6f9}
+header{background:#002147;color:white;padding:15px;text-align:center}
+nav{background:#00152d;padding:10px;text-align:center}
+nav a{color:white;margin:10px}
+section{padding:20px}
+.card{background:white;padding:10px;margin:10px;border-radius:8px}
+input,textarea{width:100%;margin:5px;padding:8px}
+button{padding:8px;background:#002147;color:white;border:none}
+</style>
+</head>
+
+<body>
+<header><h1>Rahmaniyya Public School</h1></header>
+
+<nav>
+<a href="#">Home</a>
+<a href="#login">Admin</a>
+<a href="#students">Students</a>
+<a href="#results">Results</a>
+</nav>
+
+<section id="login">
+<h2>Admin Login</h2>
+<input id="email" placeholder="Email">
+<input id="password" type="password">
+<button onclick="login()">Login</button>
+</section>
+
+<section>
+<h2>Notice Board</h2>
+<div id="noticeList"></div>
+<input id="title" placeholder="Title">
+<textarea id="content"></textarea>
+<button onclick="addNotice()">Post</button>
+</section>
+
+<section id="students">
+<h2>Student + ID Card</h2>
+<div id="students"></div>
+<input id="sname" placeholder="Name">
+<input id="sclass" placeholder="Class">
+<input type="file" id="photo">
+<button onclick="addStudent()">Add Student</button>
+<div id="idcard"></div>
+</section>
+
+<section id="results">
+<h2>Result Publishing</h2>
+<div id="results"></div>
+<input id="rname" placeholder="Student Name">
+<input id="rmarks" placeholder="Marks">
+<input type="datetime-local" id="rtime">
+<button onclick="publishResult()">Publish (Timed)</button>
+</section>
+
+</body>
+</html>
