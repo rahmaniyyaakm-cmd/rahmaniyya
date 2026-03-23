@@ -1,190 +1,535 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rahmaniyya Public School</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rahmaniyya Public School</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #002147;
+            --accent: #008080;
+            --light: #f4f6f9;
+            --white: #ffffff;
+            --text: #333;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
 
-<style>
-:root{--primary:#002147;--accent:#0aa}
-body{margin:0;font-family:Poppins;background:#f4f6f9}
-.topbar{background:var(--accent);color:white;padding:8px 20px;display:flex;justify-content:space-between}
-header{text-align:center;background:white;padding:15px}
-nav{background:var(--primary);padding:12px;text-align:center}
-nav a{color:white;margin:0 10px;cursor:pointer}
-.hero{height:260px;background:#0b3d91;color:white;display:flex;align-items:center;justify-content:center}
-.noticebar{background:var(--accent);color:white;padding:10px;overflow:hidden}
-.noticebar span{display:inline-block;animation:scroll 15s linear infinite}
-@keyframes scroll{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
-.section{display:none;padding:30px;max-width:1100px;margin:auto}
-.active{display:block}
-.card{background:white;padding:18px;margin:10px;border-radius:12px}
-.dropdown{display:inline-block;position:relative}
-.dropdown-content{display:none;position:absolute;background:#00152d}
-.dropdown-content a{display:block;padding:10px;color:white}
-footer{background:var(--primary);color:white;text-align:center;padding:20px}
-button{padding:10px;background:var(--primary);color:white;border:none;border-radius:6px}
-input{padding:10px;width:100%;margin:5px 0}
-</style>
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; 
+            font-family: 'Poppins', sans-serif; 
+            background: var(--light); 
+            color: var(--text);
+            line-height: 1.6;
+        }
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+        /* Notifications */
+        #statusMsg {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            display: none;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
-const firebaseConfig = {
- apiKey:"AIzaSyANxmeM4VQS44Y0aUYJ4t5wbC5m6QciWhI",
- authDomain:"rahmaniyya-f4b30.firebaseapp.com",
- databaseURL:"https://rahmaniyya-f4b30-default-rtdb.firebaseio.com",
- projectId:"rahmaniyya-f4b30",
- storageBucket:"rahmaniyya-f4b30.firebasestorage.app",
- messagingSenderId:"315271183077",
- appId:"1:315271183077:web:6cd14d370b9dcb7287b20c"
-};
+        /* Top Bar */
+        .topbar {
+            background: var(--accent);
+            color: white;
+            padding: 8px 5%;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            flex-wrap: wrap;
+        }
 
-const app=initializeApp(firebaseConfig);
-const db=getDatabase(app);
-const auth=getAuth(app);
-const storage=getStorage(app);
+        /* Header */
+        header {
+            text-align: center;
+            background: var(--white);
+            padding: 20px;
+            border-bottom: 3px solid var(--primary);
+        }
+        header img { max-height: 80px; margin-bottom: 10px; }
+        header h1 { margin: 0; color: var(--primary); font-size: 1.5rem; letter-spacing: 1px; }
 
-onAuthStateChanged(auth,u=>{
- document.getElementById('adminPanel').style.display=u?'block':'none';
-});
+        /* Navigation */
+        nav {
+            background: var(--primary);
+            padding: 0 5%;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        nav a {
+            color: white;
+            padding: 15px 20px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 400;
+        }
+        nav a:hover { background: rgba(255,255,255,0.1); }
 
-window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value)
-.then(()=>alert('Login success')).catch(e=>alert(e.message));
+        /* Dropdowns */
+        .dropdown { position: relative; }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: var(--primary);
+            min-width: 200px;
+            box-shadow: var(--shadow);
+            top: 100%;
+            left: 0;
+        }
+        .dropdown:hover .dropdown-content { display: block; }
+        .dropdown-content a {
+            display: block;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
 
-// notice
-const noticeRef=ref(db,'notices');
-window.addNotice=()=>push(noticeRef,{text:notice.value});
-onValue(noticeRef,s=>{
- let d=s.val(),html="";
- for(let i in d){html+=d[i].text+" | "}
- notices.innerHTML='<span>'+html+'</span>';
-});
+        /* Hero & Slider */
+        .hero {
+            height: 350px;
+            background: linear-gradient(rgba(0,33,71,0.8), rgba(0,33,71,0.8)), url('https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&w=1200') center/cover;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        .hero h2 { font-size: 2.5rem; margin-bottom: 10px; }
+        
+        #sliderView {
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            padding: 20px 5%;
+            background: #eee;
+        }
+        #sliderView img {
+            height: 200px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            object-fit: cover;
+        }
 
-// slider
-const sliderRef=ref(db,'slider');
-window.uploadSlider=async()=>{
- let f=slider.files[0];
- let r=sRef(storage,'slider/'+Date.now()+f.name);
- await uploadBytes(r,f);
- let url=await getDownloadURL(r);
- push(sliderRef,{url});
-}
-onValue(sliderRef,s=>{
- let d=s.val(),h="";
- for(let i in d){h+=`<img src='${d[i].url}' height='120'>`}
- sliderView.innerHTML=h;
-});
+        /* Notices */
+        .noticebar {
+            background: #e74c3c;
+            color: white;
+            padding: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            position: relative;
+        }
+        .notice-container {
+            display: inline-block;
+            padding-left: 100%;
+            animation: scrollNotices 20s linear infinite;
+        }
+        @keyframes scrollNotices {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
 
-window.showPage=id=>{
- document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
- document.getElementById(id).classList.add('active');
-}
+        /* Sections */
+        .section {
+            display: none;
+            padding: 40px 5%;
+            max-width: 1200px;
+            margin: auto;
+            min-height: 60vh;
+        }
+        .active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-window.toggleMenu=id=>{
- let el=document.getElementById(id);
- el.style.display=el.style.display==='block'?'none':'block';
-}
-</script>
+        .card {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+        .card h2 { color: var(--primary); margin-top: 0; border-bottom: 2px solid var(--accent); display: inline-block; padding-bottom: 5px; }
+
+        /* Admin Styles */
+        .admin-box { max-width: 400px; margin: auto; }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: inherit;
+        }
+        button {
+            background: var(--primary);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 600;
+        }
+        button:hover { background: var(--accent); }
+        .admin-panel-ui {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed #ccc;
+        }
+
+        footer {
+            background: var(--primary);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 50px;
+        }
+
+        @media (max-width: 768px) {
+            .hero h2 { font-size: 1.8rem; }
+            nav a { padding: 10px; font-size: 0.9rem; }
+            .topbar { justify-content: center; text-align: center; }
+        }
+    </style>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyANxmeM4VQS44Y0aUYJ4t5wbC5m6QciWhI",
+            authDomain: "rahmaniyya-f4b30.firebaseapp.com",
+            databaseURL: "https://rahmaniyya-f4b30-default-rtdb.firebaseio.com",
+            projectId: "rahmaniyya-f4b30",
+            storageBucket: "rahmaniyya-f4b30.firebasestorage.app",
+            messagingSenderId: "315271183077",
+            appId: "1:315271183077:web:6cd14d370b9dcb7287b20c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+        const storage = getStorage(app);
+
+        // UI Utility
+        window.notify = (msg, isError = false) => {
+            const el = document.getElementById('statusMsg');
+            el.innerText = msg;
+            el.style.display = 'block';
+            el.style.background = isError ? '#e74c3c' : '#2ecc71';
+            setTimeout(() => { el.style.display = 'none'; }, 4000);
+        };
+
+        // Auth Logic
+        onAuthStateChanged(auth, user => {
+            const adminPanel = document.getElementById('adminPanel');
+            const loginForm = document.getElementById('loginForm');
+            if (user) {
+                adminPanel.style.display = 'block';
+                loginForm.style.display = 'none';
+                document.getElementById('userEmailDisplay').innerText = `Logged in as: ${user.email}`;
+            } else {
+                adminPanel.style.display = 'none';
+                loginForm.style.display = 'block';
+            }
+        });
+
+        window.login = () => {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            signInWithEmailAndPassword(auth, email, pass)
+                .then(() => notify('Login Successful! Welcome Admin.'))
+                .catch(e => notify('Login Failed: ' + e.message, true));
+        };
+
+        window.logout = () => signOut(auth).then(() => notify('Logged out.'));
+
+        // Notices
+        const noticeRef = ref(db, 'notices');
+        window.addNotice = () => {
+            const txt = document.getElementById('noticeInput').value;
+            if(!txt) return;
+            push(noticeRef, { text: txt, date: Date.now() })
+                .then(() => {
+                    document.getElementById('noticeInput').value = '';
+                    notify('Notice Added!');
+                });
+        };
+
+        onValue(noticeRef, snapshot => {
+            const data = snapshot.val();
+            let html = "";
+            let adminHtml = "";
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    html += `${data[key].text} ••• `;
+                    adminHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:5px; border-bottom:1px solid #eee; padding:5px">
+                        <span>${data[key].text}</span>
+                        <button style="padding:2px 8px; background:#e74c3c; font-size:12px" onclick="deleteItem('notices/${key}')">Delete</button>
+                    </div>`;
+                });
+            }
+            document.getElementById('noticesContent').innerHTML = html || "Welcome to Rahmaniyya Public School";
+            document.getElementById('adminNoticeList').innerHTML = adminHtml;
+        });
+
+        // Slider
+        const sliderRef = ref(db, 'slider');
+        window.uploadSlider = async () => {
+            const file = document.getElementById('sliderInput').files[0];
+            if (!file) return notify('Please select an image', true);
+            
+            notify('Uploading image...');
+            const storagePath = sRef(storage, 'slider/' + Date.now() + '_' + file.name);
+            try {
+                await uploadBytes(storagePath, file);
+                const url = await getDownloadURL(storagePath);
+                await push(sliderRef, { url, name: file.name });
+                notify('Image uploaded successfully!');
+                document.getElementById('sliderInput').value = '';
+            } catch (e) {
+                notify('Upload error: ' + e.message, true);
+            }
+        };
+
+        onValue(sliderRef, snapshot => {
+            const data = snapshot.val();
+            let h = "";
+            let ah = "";
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    h += `<img src='${data[key].url}' alt='School Image'>`;
+                    ah += `<div style="display:inline-block; margin:5px; text-align:center">
+                        <img src="${data[key].url}" height="60" style="border-radius:4px"><br>
+                        <button style="padding:2px 8px; background:#e74c3c; font-size:10px" onclick="deleteItem('slider/${key}')">Remove</button>
+                    </div>`;
+                });
+            }
+            document.getElementById('sliderView').innerHTML = h;
+            document.getElementById('adminSliderList').innerHTML = ah;
+        });
+
+        window.deleteItem = (path) => {
+            if(confirm('Are you sure you want to delete this?')) {
+                remove(ref(db, path)).then(() => notify('Item Deleted'));
+            }
+        }
+
+        // Navigation
+        window.showPage = id => {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Close dropdowns on mobile
+            document.querySelectorAll('.dropdown-content').forEach(d => d.style.display = '');
+        };
+
+    </script>
 </head>
-
 <body>
 
+<div id="statusMsg"></div>
+
 <div class="topbar">
-<div>📧 rahmaniyyaakm@gmail.com</div>
-<div>04931 2027107 | +91 9400857635</div>
+    <div>📧 rahmaniyyaakm@gmail.com</div>
+    <div>📞 04931 202710 | 📱 +91 9400857635</div>
 </div>
 
 <header>
-<img src="log rah.png" height="60"><br>
-<b>RAHMANIYYA PUBLIC SCHOOL</b>
+    <img src="log rah.png" onerror="this.src='https://via.placeholder.com/80?text=RPS'" alt="Logo">
+    <h1>RAHMANIYYA PUBLIC SCHOOL</h1>
 </header>
 
 <nav>
-<a onclick="showPage('home')">Home</a>
+    <a onclick="showPage('home')">Home</a>
 
-<div class="dropdown">
-<a onclick="toggleMenu('aboutMenu')">About ▾</a>
-<div id="aboutMenu" class="dropdown-content">
-<a onclick="showPage('profile')">School Profile</a>
-<a onclick="showPage('vision')">Vision & Mission</a>
-<a onclick="showPage('milestones')">Milestones</a>
-</div>
-</div>
+    <div class="dropdown">
+        <a href="javascript:void(0)">About ▾</a>
+        <div class="dropdown-content">
+            <a onclick="showPage('profile')">School Profile</a>
+            <a onclick="showPage('vision')">Vision & Mission</a>
+            <a onclick="showPage('milestones')">Milestones</a>
+        </div>
+    </div>
 
-<div class="dropdown">
-<a onclick="toggleMenu('acadMenu')">Academics ▾</a>
-<div id="acadMenu" class="dropdown-content">
-<a onclick="showPage('lkg')">LKG</a>
-<a onclick="showPage('ukg')">UKG</a>
-<a onclick="showPage('class1')">Class I</a>
-<a onclick="showPage('class2')">Class II</a>
-<a onclick="showPage('class3')">Class III</a>
-<a onclick="showPage('class4')">Class IV</a>
-</div>
-</div>
+    <div class="dropdown">
+        <a href="javascript:void(0)">Academics ▾</a>
+        <div class="dropdown-content">
+            <a onclick="showPage('lkg')">LKG</a>
+            <a onclick="showPage('ukg')">UKG</a>
+            <a onclick="showPage('class1')">Class I</a>
+            <a onclick="showPage('class2')">Class II</a>
+            <a onclick="showPage('class3')">Class III</a>
+            <a onclick="showPage('class4')">Class IV</a>
+        </div>
+    </div>
 
-<div class="dropdown">
-<a onclick="toggleMenu('studentMenu')">Student Affairs ▾</a>
-<div id="studentMenu" class="dropdown-content">
-<a onclick="showPage('clubs')">Club Activities</a>
-<a onclick="showPage('tutorial')">Tutorial System</a>
-</div>
-</div>
+    <div class="dropdown">
+        <a href="javascript:void(0)">Student Affairs ▾</a>
+        <div class="dropdown-content">
+            <a onclick="showPage('clubs')">Club Activities</a>
+            <a onclick="showPage('tutorial')">Tutorial System</a>
+        </div>
+    </div>
 
-<a onclick="showPage('gallery')">Gallery</a>
-<a onclick="showPage('admin')">Admin</a>
+    <a onclick="showPage('gallery')">Gallery</a>
+    <a onclick="showPage('admin')">Admin</a>
 </nav>
 
-<div class="hero">Welcome to Rahmaniyya Public School</div>
-<div id="sliderView"></div>
-<div class="noticebar" id="notices">Loading...</div>
+<div class="noticebar">
+    <div class="notice-container" id="noticesContent">Loading notices...</div>
+</div>
 
 <!-- HOME -->
-<div id="home" class="section active"><div class="card"><h2>Home</h2><p>Dynamic school portal with announcements and updates.</p></div></div>
+<div id="home" class="section active">
+    <div class="hero">
+        <h2>Excellence in Education</h2>
+        <p>Nurturing minds, building character, and shaping the future since 1995.</p>
+    </div>
+    <div id="sliderView"></div>
+    <div class="card">
+        <h2>Welcome to Our School</h2>
+        <p>Rahmaniyya Public School is a premier educational institution committed to providing quality education with a focus on holistic development. Our dynamic curriculum and dedicated faculty ensure that every child reaches their full potential.</p>
+    </div>
+</div>
 
 <!-- ABOUT -->
-<div id="profile" class="section"><div class="card"><h2>School Profile</h2><p>Established in 1995, providing excellence in education.</p></div></div>
-<div id="vision" class="section"><div class="card"><h2>Vision & Mission</h2><p>🎯 Vision: Build future leaders<br>🚀 Mission: Quality education</p></div></div>
-<div id="milestones" class="section"><div class="card"><h2>Milestones</h2><p>🏆 25+ years of excellence<br>🎓 2000+ students</p></div></div>
+<div id="profile" class="section">
+    <div class="card">
+        <h2>School Profile</h2>
+        <p>Established in 1995, Rahmaniyya Public School has been a beacon of knowledge in the region. We offer a supportive environment where students are encouraged to explore their interests and excel in both academics and co-curricular activities.</p>
+    </div>
+</div>
+
+<div id="vision" class="section">
+    <div class="card">
+        <h2>Vision & Mission</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <h3>🎯 Our Vision</h3>
+                <p>To be a world-class center of learning that develops responsible, innovative, and compassionate global citizens.</p>
+            </div>
+            <div>
+                <h3>🚀 Our Mission</h3>
+                <p>To provide a safe and stimulating learning environment that empowers students to achieve academic excellence and personal growth.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="milestones" class="section">
+    <div class="card">
+        <h2>Milestones</h2>
+        <ul>
+            <li>🏆 25+ years of academic excellence.</li>
+            <li>🎓 Over 2,000 successful alumni across the globe.</li>
+            <li>🏅 Multiple district and state-level awards in sports and arts.</li>
+            <li>💻 Integrated modern IT labs and smart classrooms.</li>
+        </ul>
+    </div>
+</div>
 
 <!-- ACADEMICS -->
-<div id="lkg" class="section"><div class="card"><h2>LKG</h2><p>Alphabet, numbers, drawing</p></div></div>
-<div id="ukg" class="section"><div class="card"><h2>UKG</h2><p>Basic English, Math</p></div></div>
-<div id="class1" class="section"><div class="card"><h2>Class I</h2><p>English, Maths, EVS</p></div></div>
-<div id="class2" class="section"><div class="card"><h2>Class II</h2><p>English, Maths, EVS</p></div></div>
-<div id="class3" class="section"><div class="card"><h2>Class III</h2><p>English, Maths, Science</p></div></div>
-<div id="class4" class="section"><div class="card"><h2>Class IV</h2><p>English, Maths, Social</p></div></div>
+<div id="lkg" class="section"><div class="card"><h2>LKG (Lower Kindergarten)</h2><p>Our LKG program focuses on foundational skills: Alphabets, numbers, colors, and creative drawing through play-way methods.</p></div></div>
+<div id="ukg" class="section"><div class="card"><h2>UKG (Upper Kindergarten)</h2><p>Preparation for primary schooling with basic English literacy, mathematical concepts, and social skills.</p></div></div>
+<div id="class1" class="section"><div class="card"><h2>Class I</h2><p>Core subjects: English, Mathematics, and Environmental Studies (EVS) with a focus on conceptual clarity.</p></div></div>
+<div id="class2" class="section"><div class="card"><h2>Class II</h2><p>Continuing the journey with advanced English, Maths, and EVS modules.</p></div></div>
+<div id="class3" class="section"><div class="card"><h2>Class III</h2><p>Introduction to formal Science and deeper linguistic exploration in English and regional languages.</p></div></div>
+<div id="class4" class="section"><div class="card"><h2>Class IV</h2><p>Building strong analytical skills in Maths, Social Science, and Language Arts.</p></div></div>
 
 <!-- STUDENTS -->
-<div id="clubs" class="section"><div class="card"><h2>Club Activities</h2><p>English, Hindi, Arabic, IT, Quiz, Environment, Maths, Sports Clubs with coordinators.</p></div></div>
-<div id="tutorial" class="section"><div class="card"><h2>Tutorial System</h2><p>Principal, LPST, KG, Arabic staff list with contact details.</p></div></div>
+<div id="clubs" class="section">
+    <div class="card">
+        <h2>Club Activities</h2>
+        <p>We believe in the power of interests. Our clubs include:</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            <span style="background: #eee; padding: 5px 15px; border-radius: 20px;">English Club</span>
+            <span style="background: #eee; padding: 5px 15px; border-radius: 20px;">IT & Robotics</span>
+            <span style="background: #eee; padding: 5px 15px; border-radius: 20px;">Quiz Club</span>
+            <span style="background: #eee; padding: 5px 15px; border-radius: 20px;">Sports Academy</span>
+            <span style="background: #eee; padding: 5px 15px; border-radius: 20px;">Eco Club</span>
+        </div>
+    </div>
+</div>
+
+<div id="tutorial" class="section">
+    <div class="card">
+        <h2>Tutorial System</h2>
+        <p>Our unique tutorial system ensures personalized attention for every student. Led by our Principal and supported by dedicated LPST, KG, and Arabic staff members.</p>
+    </div>
+</div>
 
 <!-- GALLERY -->
-<div id="gallery" class="section"><div class="card"><h2>Gallery</h2><p>Admin uploaded photos appear here.</p></div></div>
+<div id="gallery" class="section">
+    <div class="card">
+        <h2>Gallery</h2>
+        <p>Visual highlights of our school events and activities will appear here.</p>
+        <div id="galleryContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+            <!-- Gallery content is usually mirrored from the slider in this simple setup -->
+        </div>
+    </div>
+</div>
 
 <!-- ADMIN -->
 <div id="admin" class="section">
-<div class="card">
-<h2>Admin Login</h2>
-<input id="email"><input id="password" type="password">
-<button onclick="login()">Login</button>
+    <div class="card admin-box">
+        <h2>Admin Portal</h2>
+        
+        <div id="loginForm">
+            <p><small>Authorized access only.</small></p>
+            <label>Email ID</label>
+            <input id="email" type="email" value="rahmaniyyaakm@gmail.com" placeholder="Email">
+            <label>Password</label>
+            <input id="password" type="password" value="Rahmaniyya@2004" placeholder="Password">
+            <button onclick="login()" style="width: 100%;">Login</button>
+            <p style="font-size: 11px; margin-top: 15px; color: #666;">Credentials provided by management.</p>
+        </div>
 
-<div id="adminPanel" style="display:none">
-<h3>Upload Slider</h3>
-<input type="file" id="slider"><button onclick="uploadSlider()">Upload</button>
+        <div id="adminPanel" style="display:none">
+            <p id="userEmailDisplay" style="font-weight: bold; color: var(--accent);"></p>
+            
+            <div class="admin-panel-ui">
+                <h3>Manage Slider</h3>
+                <input type="file" id="sliderInput" accept="image/*">
+                <button onclick="uploadSlider()">Upload Image</button>
+                <div id="adminSliderList" style="margin-top: 10px;"></div>
+            </div>
 
-<h3>Add Notification</h3>
-<input id="notice"><button onclick="addNotice()">Add</button>
-</div>
-</div>
+            <div class="admin-panel-ui">
+                <h3>Post Announcement</h3>
+                <textarea id="noticeInput" placeholder="Type notification text here..."></textarea>
+                <button onclick="addNotice()">Add Notice</button>
+                <div id="adminNoticeList" style="margin-top: 15px; max-height: 200px; overflow-y: auto;"></div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <button onclick="logout()" style="background: #444; width: 100%;">Logout</button>
+            </div>
+        </div>
+    </div>
 </div>
 
-<footer>© 2026 Rahmaniyya Public School</footer>
+<footer>
+    <p>&copy; 2026 Rahmaniyya Public School. All Rights Reserved.</p>
+    <p><small>Rahmaniyya Nagar, AKM Road</small></p>
+</footer>
 
 </body>
 </html>
