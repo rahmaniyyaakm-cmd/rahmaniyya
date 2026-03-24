@@ -61,6 +61,16 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* Loading Spinner */
+        .loader {
+            border-top-color: #1e3a8a;
+            animation: spinner 1.5s linear infinite;
+        }
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 
     <script>
@@ -86,6 +96,7 @@
                 mobileMenuOpen: false,
                 currentSlide: 0,
                 isSubmitting: false,
+                isLoading: true, // Initial loading state
                 
                 // Content States
                 notifications: [],
@@ -139,40 +150,39 @@
                 modalForm: {},
                 toast: { show: false, message: '', success: true },
 
-                init() {
-                    this.fetchPublicData();
+                async init() {
+                    // Start fetching data immediately
+                    await this.fetchPublicData();
                     this.startSlider();
+                    this.isLoading = false; // Turn off loader once data is ready
                     setTimeout(() => lucide.createIcons(), 200);
                 },
 
                 async fetchPublicData() {
                     try {
-                        const { data: nData } = await supabaseClient.from('notifications').select('*').order('id', { ascending: false });
-                        this.notifications = nData || [];
+                        // Parallelize requests to Supabase to significantly improve load time
+                        const [nRes, cRes, newsRes, sRes, gRes] = await Promise.all([
+                            supabaseClient.from('notifications').select('*').order('id', { ascending: false }),
+                            supabaseClient.from('clubs').select('*'),
+                            supabaseClient.from('news_events').select('*').order('date', { ascending: false }),
+                            supabaseClient.from('staff').select('*'),
+                            supabaseClient.from('gallery').select('*').order('created_at', { ascending: false })
+                        ]);
+
+                        this.notifications = nRes.data || [];
                         this.activeNotifications = this.notifications.filter(n => n.active);
 
-                        const { data: cData } = await supabaseClient.from('clubs').select('*');
-                        this.clubs = cData || [
+                        this.clubs = cRes.data || [
                             { name: 'Eco Club', purpose: 'Promoting environmental awareness and sustainability.', teacher_name: 'Mrs. Fatima', teacher_phone: '9847123456', student_name: 'Zidan K', icon: 'leaf' },
                             { name: 'Literary Club', purpose: 'Enhancing oratory skills and creative writing.', teacher_name: 'Mr. Anees', teacher_phone: '9847654321', student_name: 'Shifa M', icon: 'book-open' },
                             { name: 'Science Club', purpose: 'Developing scientific temper through experiments.', teacher_name: 'Ms. Soumya', teacher_phone: '9988...', student_name: 'Rahul V', icon: 'flask' }
                         ];
 
-                        const { data: newsData } = await supabaseClient.from('news_events').select('*').order('date', { ascending: false });
-                        this.news = newsData || [
-                            { id: 1, title: 'Annual Sports Meet 2024', type: 'Event', date: '2024-03-20', description: 'A day filled with athletics and team spirit.', image: null }
-                        ];
-
-                        const { data: staffData } = await supabaseClient.from('staff').select('*');
-                        this.staff = staffData || [
+                        this.news = newsRes.data || [];
+                        this.staff = sRes.data || [
                             { id: 1, name: 'Mrs. Sreelatha V', designation: 'Principal', qualification: 'M.A, B.Ed, M.Phil', phone: '04931 2027107', photo_url: 'https://images.unsplash.com/photo-1544717297-fa154da09f9b?auto=format&fit=crop&q=80&w=400' }
                         ];
-
-                        const { data: gallData } = await supabaseClient.from('gallery').select('*').order('created_at', { ascending: false });
-                        this.gallery = gallData || [
-                            { id: 1, url: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80&w=400', caption: 'Science Lab' },
-                            { id: 2, url: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&q=80&w=400', caption: 'Play Area' }
-                        ];
+                        this.gallery = gRes.data || [];
                     } catch (e) {
                         console.error("Supabase fetch error:", e);
                     }
@@ -197,10 +207,12 @@
                 },
 
                 async fetchAdminData() {
-                    const { data: adm } = await supabaseClient.from('admissions').select('*').order('created_at', { ascending: false });
-                    this.admissionApplications = adm || [];
-                    const { data: res } = await supabaseClient.from('results').select('*');
-                    this.results = res || [];
+                    const [admRes, resRes] = await Promise.all([
+                        supabaseClient.from('admissions').select('*').order('created_at', { ascending: false }),
+                        supabaseClient.from('results').select('*')
+                    ]);
+                    this.admissionApplications = admRes.data || [];
+                    this.results = resRes.data || [];
                 },
 
                 async submitAdmission() {
@@ -336,6 +348,12 @@
     </script>
 </head>
 <body x-data="schoolApp()" x-cloak class="bg-gray-50 text-gray-800 overflow-x-hidden">
+
+    <!-- LOADING OVERLAY -->
+    <div x-show="isLoading" class="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center">
+        <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-16 w-16 mb-4"></div>
+        <p class="text-primary font-bold tracking-widest animate-pulse">RAHMANIYYA PUBLIC SCHOOL</p>
+    </div>
 
     <!-- HEADER -->
     <header class="sticky top-0 z-50 glass-nav border-b shadow-sm">
@@ -630,7 +648,7 @@
 
         <!-- ADMISSION FORM -->
         <template x-if="currentPage === 'admission'">
-            <div class="container mx-auto px-4 py-20 bg-gray-50">
+            <div class="container mx-auto px-4 py-20 bg-gray-50 animate-fade-in">
                 <div class="max-w-5xl mx-auto bg-white rounded-[3rem] shadow-2xl border overflow-hidden">
                     <div class="bg-primary text-white p-12 text-center relative overflow-hidden">
                         <h2 class="text-4xl font-bold mb-4 uppercase tracking-tight">ADMISSION PORTAL 2024-25</h2>
@@ -794,8 +812,8 @@
 
         <!-- ADMIN LOGIN -->
         <template x-if="currentPage === 'admin-login'">
-            <div class="flex items-center justify-center min-h-[85vh] px-4 bg-primary/5">
-                <div class="bg-white p-12 rounded-[3rem] shadow-2xl w-full max-w-md border text-center animate-fade-in">
+            <div class="flex items-center justify-center min-h-[85vh] px-4 bg-primary/5 animate-fade-in">
+                <div class="bg-white p-12 rounded-[3rem] shadow-2xl w-full max-w-md border text-center">
                     <div class="w-20 h-20 bg-secondary rounded-3xl flex items-center justify-center text-primary text-3xl mx-auto mb-8 shadow-2xl"><i class="fas fa-lock"></i></div>
                     <h2 class="text-3xl font-bold text-primary mb-10">Admin Access</h2>
                     <form @submit.prevent="handleAdminLogin" class="space-y-6 text-left">
