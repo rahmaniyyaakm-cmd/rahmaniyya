@@ -52,35 +52,21 @@
         }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
-        /* Top Bar */
-        .topbar {
-            background: var(--accent); color: white; padding: 8px 5%;
-            display: flex; justify-content: space-between; font-size: 0.85rem; flex-wrap: wrap;
-        }
-
-        /* Header */
+        /* Layout & UI */
+        .topbar { background: var(--accent); color: white; padding: 8px 5%; display: flex; justify-content: space-between; font-size: 0.85rem; flex-wrap: wrap; }
         header { text-align: center; background: var(--white); padding: 20px; border-bottom: 3px solid var(--primary); }
         header img { max-height: 80px; margin-bottom: 10px; }
         header h1 { margin: 0; color: var(--primary); font-size: 1.5rem; letter-spacing: 1px; }
 
-        /* Navigation */
-        nav {
-            background: var(--primary); padding: 0 5%;
-            display: flex; justify-content: center; flex-wrap: wrap;
-            position: sticky; top: 0; z-index: 1000;
-        }
+        nav { background: var(--primary); padding: 0 5%; display: flex; justify-content: center; flex-wrap: wrap; position: sticky; top: 0; z-index: 1000; }
         nav a { color: white; padding: 15px 20px; text-decoration: none; cursor: pointer; transition: 0.3s; font-weight: 400; }
         nav a:hover { background: rgba(255,255,255,0.1); }
 
         .dropdown { position: relative; }
-        .dropdown-content {
-            display: none; position: absolute; background: var(--primary);
-            min-width: 200px; box-shadow: var(--shadow); top: 100%; left: 0; border-radius: 0 0 8px 8px;
-        }
+        .dropdown-content { display: none; position: absolute; background: var(--primary); min-width: 200px; box-shadow: var(--shadow); top: 100%; left: 0; border-radius: 0 0 8px 8px; }
         .dropdown:hover .dropdown-content { display: block; }
         .dropdown-content a { display: block; border-top: 1px solid rgba(255,255,255,0.05); }
 
-        /* Scrolling News Ticker */
         .noticebar { background: var(--ticker-bg); color: white; height: 40px; display: flex; align-items: center; overflow: hidden; position: relative; }
         .ticker-label { background: #c0392b; padding: 0 20px; height: 100%; display: flex; align-items: center; font-weight: 600; z-index: 10; box-shadow: 5px 0 10px rgba(0,0,0,0.1); }
         .ticker-wrap { flex: 1; overflow: hidden; white-space: nowrap; }
@@ -89,13 +75,11 @@
         .ticker-item { display: inline-block; padding: 0 40px; font-weight: 400; }
         @keyframes ticker-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
 
-        /* Hero Slider */
         .home-slider-container { width: 100%; background: #000; overflow: hidden; position: relative; height: 450px; }
         .slider-track { display: flex; width: 100%; height: 100%; position: relative; }
         .slider-item { min-width: 100%; height: 100%; position: absolute; opacity: 0; transition: opacity 1s; background-size: cover; background-position: center; }
         .slider-item.active { opacity: 1; }
 
-        /* News Section */
         .news-section { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; padding: 40px 5%; }
         .news-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .news-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: var(--shadow); height: 100%; display: flex; flex-direction: column; }
@@ -104,13 +88,11 @@
         .news-meta { font-size: 0.75rem; color: var(--accent); font-weight: 600; text-transform: uppercase; }
         .news-title { font-weight: 600; font-size: 1rem; margin: 5px 0; display: block; color: var(--primary); text-decoration: none; }
 
-        /* General Sections */
         .section { display: none; padding: 40px 5%; max-width: 1400px; margin: auto; min-height: 60vh; }
         .section.active { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .card { background: var(--white); padding: 30px; border-radius: 15px; box-shadow: var(--shadow); margin-bottom: 20px; }
         
-        /* Stats & Gallery */
         .stats-bar { padding: 50px 5%; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; text-align: center; }
         .stat-card { background: var(--light-accent); padding: 30px; border-radius: 12px; }
         .stat-card b { font-size: 2.5rem; display: block; color: var(--primary); }
@@ -119,7 +101,7 @@
         .gallery-item { height: 200px; border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); background: #eee; }
         .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Admin UI */
+        /* Admin Management */
         .admin-section-box { background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 30px; }
         .admin-section-box h3 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--accent); display: inline-block; padding-bottom: 5px; margin-bottom: 20px; }
         .admin-item-list { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
@@ -310,29 +292,40 @@
     const SUPABASE_URL = "https://eqpemwrvwftlpmkxvcsb.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxcGVtd3J2d2Z0bHBta3h2Y3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMzI1MDMsImV4cCI6MjA4OTkwODUwM30.NwA31ZzqtNpfjsIFPbZb8KhW1988u3ahiUaheJyibBs"; 
 
-    // Initialize Supabase correctly from window.supabase
-    const { createClient } = supabase;
-    const client = createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Initialize Supabase correctly
+    let client = null;
+    try {
+        if (typeof supabase !== 'undefined') {
+            const { createClient } = supabase;
+            client = createClient(SUPABASE_URL, SUPABASE_KEY);
+        } else {
+            console.error("Supabase library not found!");
+        }
+    } catch (e) {
+        console.error("Supabase Init Error:", e);
+    }
 
-    // --- State & Notifications ---
-    window.admissionsData = {};
-    
+    // --- Notifications & Loader ---
     window.notify = (msg, isError = false) => {
         const el = document.getElementById('statusMsg');
+        if (!el) return;
         el.innerText = msg;
         el.style.display = 'block';
         el.style.background = isError ? '#e74c3c' : '#2ecc71';
-        setTimeout(() => { el.style.display = 'none'; }, 4000);
+        setTimeout(() => { el.style.display = 'none'; }, 5000);
     };
 
     const removePreloader = () => {
         const pre = document.getElementById('preloader');
         if(pre) pre.style.display = 'none';
     };
-    setTimeout(removePreloader, 4000);
+    
+    // Safety Timeout for Loader
+    setTimeout(removePreloader, 5000);
 
-    // --- Auth Management ---
+    // --- AUTH ---
     const checkUser = async () => {
+        if (!client) return;
         const { data: { session } } = await client.auth.getSession();
         const adminPanel = document.getElementById('adminPanel');
         const loginForm = document.getElementById('loginForm');
@@ -346,168 +339,153 @@
         }
         removePreloader();
     };
-    checkUser();
 
-    client.auth.onAuthStateChange((event, session) => {
+    if (client) {
         checkUser();
-    });
+        client.auth.onAuthStateChange(() => checkUser());
+    }
 
     window.login = async () => {
+        if (!client) return;
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const { error } = await client.auth.signInWithPassword({ email, password });
         if (error) notify(error.message, true);
-        else notify('Login Successful!');
+        else notify('Welcome Admin!');
     };
 
     window.logout = async () => {
+        if (!client) return;
         await client.auth.signOut();
         notify('Logged out.');
     };
 
-    // --- Scrolling News ---
-    const fetchNews = async () => {
-        const { data, error } = await client.from('scrolling_news').select('*').order('id', { ascending: false });
-        if (error) return;
-        
-        let tickerH = ""; let adminH = "";
-        data.forEach(item => {
-            tickerH += `<span class="ticker-item">🔔 ${item.text} ${item.link ? `<a href="${item.link}" target="_blank">Link</a>` : ''}</span>`;
-            adminH += `<div class="admin-notice-row"><span>${item.text}</span><button onclick="deleteItem('scrolling_news', ${item.id})" style="background:red; padding:5px 10px;">X</button></div>`;
-        });
-        document.getElementById('tickerContent').innerHTML = tickerH || "Welcome to Rahmaniyya Public School Akampadam!";
-        document.getElementById('adminNewsList').innerHTML = adminH || "No scrolling news active.";
-    };
-
-    window.addScrollingNews = async () => {
-        const text = document.getElementById('newsInput').value;
-        const link = document.getElementById('newsLinkInput').value;
-        if(!text) return notify('Enter news text', true);
-
-        const { error } = await client.from('scrolling_news').insert([{ text, link }]);
-        if (error) notify(error.message, true);
-        else {
-            notify('News Added!');
-            document.getElementById('newsInput').value = '';
-            document.getElementById('newsLinkInput').value = '';
-            fetchNews();
+    // --- DATA FETCHING ---
+    const fetchAllData = async () => {
+        if (!client) return;
+        try {
+            await Promise.allSettled([
+                fetchNews(),
+                fetchBanners(),
+                fetchNewsCards(),
+                fetchGallery(),
+                fetchAdmissions()
+            ]);
+        } catch (err) {
+            console.error("Global Fetch Error:", err);
+        } finally {
+            removePreloader();
         }
     };
 
-    // --- Banners / Slider ---
+    const fetchNews = async () => {
+        const { data, error } = await client.from('scrolling_news').select('*').order('id', { ascending: false });
+        if (error) return console.warn("News Error:", error.message);
+        let h1 = ""; let h2 = "";
+        data.forEach(item => {
+            h1 += `<span class="ticker-item">🔔 ${item.text} ${item.link ? `<a href="${item.link}" target="_blank">Link</a>` : ''}</span>`;
+            h2 += `<div class="admin-notice-row"><span>${item.text}</span><button onclick="deleteItem('scrolling_news', ${item.id})" style="background:red; padding:5px 10px;">X</button></div>`;
+        });
+        document.getElementById('tickerContent').innerHTML = h1 || "Welcome to Rahmaniyya Public School!";
+        document.getElementById('adminNewsList').innerHTML = h2 || "No active news.";
+    };
+
     const fetchBanners = async () => {
         const { data, error } = await client.from('banners').select('*').order('id', { ascending: false });
         if (error) return;
-        
-        const track = document.getElementById('homeSliderTrack');
-        const adminL = document.getElementById('adminSliderList');
-        track.innerHTML = ""; adminL.innerHTML = "";
-        
-        if(data && data.length > 0) {
+        const t = document.getElementById('homeSliderTrack');
+        const a = document.getElementById('adminSliderList');
+        if(!t || !a) return;
+        t.innerHTML = ""; a.innerHTML = "";
+        if (data && data.length > 0) {
             data.forEach((item, i) => {
-                track.innerHTML += `<div class="slider-item ${i===0?'active':''}" style="background-image:url('${item.url}')"></div>`;
-                adminL.innerHTML += `<div class="admin-thumb-card"><img src="${item.url}" class="admin-thumb"><button onclick="deleteItem('banners', ${item.id})" style="background:red; width:100%; font-size:10px;">Delete</button></div>`;
+                t.innerHTML += `<div class="slider-item ${i===0?'active':''}" style="background-image:url('${item.url}')"></div>`;
+                a.innerHTML += `<div class="admin-thumb-card"><img src="${item.url}" class="admin-thumb"><button onclick="deleteItem('banners', ${item.id})" style="background:red; width:100%; font-size:10px;">Delete</button></div>`;
             });
             startSliderCycle();
         } else {
-            track.innerHTML = `<div class="slider-item active" style="background-image:url('https://via.placeholder.com/1200x450?text=Welcome')"></div>`;
+            t.innerHTML = `<div class="slider-item active" style="background-image:url('https://via.placeholder.com/1200x450?text=Welcome')"></div>`;
         }
     };
 
-    window.uploadSlider = async () => {
-        const fileInput = document.getElementById('sliderInput');
-        const file = fileInput.files[0];
-        if(!file) return notify('Select image', true);
-        
-        const fileName = `${Date.now()}_${file.name}`;
-        const { data: uploadData, error: uploadError } = await client.storage.from('banners').upload(fileName, file);
-        if (uploadError) return notify(uploadError.message, true);
-
-        const { data: urlData } = client.storage.from('banners').getPublicUrl(fileName);
-        const { error: dbError } = await client.from('banners').insert([{ url: urlData.publicUrl }]);
-        
-        if (dbError) notify(dbError.message, true);
-        else {
-            notify('Banner uploaded!');
-            fileInput.value = '';
-            fetchBanners();
-        }
-    };
-
-    // --- News Cards ---
     const fetchNewsCards = async () => {
         const { data, error } = await client.from('news_cards').select('*').order('id', { ascending: false });
         if (error) return;
-
-        const grid = document.getElementById('newsEventGrid');
-        const adminL = document.getElementById('adminEventList');
-        grid.innerHTML = ""; adminL.innerHTML = "";
-        
+        const g = document.getElementById('newsEventGrid');
+        const a = document.getElementById('adminEventList');
+        if(!g || !a) return;
+        g.innerHTML = ""; a.innerHTML = "";
         data.forEach(item => {
-            grid.innerHTML += `<div class="news-card"><img src="${item.url}"><div class="news-content"><span class="news-meta">${item.date_label || 'Today'} / ${item.category || 'News'}</span><b class="news-title">${item.title}</b></div></div>`;
-            adminL.innerHTML += `<div class="admin-thumb-card" style="width:200px"><img src="${item.url}" class="admin-thumb"><p style="font-size:11px; margin:5px">${item.title}</p><button onclick="deleteItem('news_cards', ${item.id})" style="background:red; width:100%; font-size:10px;">Remove</button></div>`;
+            g.innerHTML += `<div class="news-card"><img src="${item.url}"><div class="news-content"><span class="news-meta">${item.date_label || 'Today'} / ${item.category || 'News'}</span><b class="news-title">${item.title}</b></div></div>`;
+            a.innerHTML += `<div class="admin-thumb-card" style="width:200px"><img src="${item.url}" class="admin-thumb"><p style="font-size:11px; margin:5px">${item.title}</p><button onclick="deleteItem('news_cards', ${item.id})" style="background:red; width:100%; font-size:10px;">Remove</button></div>`;
         });
+    };
+
+    const fetchGallery = async () => {
+        const { data, error } = await client.from('gallery').select('*').order('id', { ascending: false });
+        if (error) return;
+        const g = document.getElementById('fullGalleryList');
+        const a = document.getElementById('adminGalleryList');
+        if(!g || !a) return;
+        g.innerHTML = ""; a.innerHTML = "";
+        data.forEach(item => {
+            g.innerHTML += `<div class="gallery-item"><img src="${item.url}"></div>`;
+            a.innerHTML += `<div class="admin-thumb-card"><img src="${item.url}" class="admin-thumb"><button onclick="deleteItem('gallery', ${item.id})" style="background:red; width:100%; font-size:10px;">Remove</button></div>`;
+        });
+    };
+
+    const fetchAdmissions = async () => {
+        const { data, error } = await client.from('admissions').select('*').order('id', { ascending: false });
+        if (error) return;
+        const b = document.getElementById('admissionsTableBody');
+        if(!b) return;
+        b.innerHTML = "";
+        data.forEach(item => {
+            window.admissionsData[item.id] = item;
+            b.innerHTML += `<tr><td>${item.student_name}</td><td>${item.target_class}</td><td>${item.phone}</td><td><button onclick="generateAppPDF(${item.id})" style="padding:5px">PDF</button> <button onclick="deleteItem('admissions', ${item.id})" style="background:red; padding:5px">X</button></td></tr>`;
+        });
+    };
+
+    // --- ACTIONS ---
+    window.addScrollingNews = async () => {
+        const text = document.getElementById('newsInput').value;
+        const link = document.getElementById('newsLinkInput').value;
+        if(!text) return notify('Please enter a message', true);
+        const { error } = await client.from('scrolling_news').insert([{ text, link }]);
+        if (error) notify("Security Error: Check RLS policies in Supabase SQL editor", true);
+        else { notify('News Added!'); fetchNews(); }
+    };
+
+    window.uploadSlider = async () => {
+        const file = document.getElementById('sliderInput').files[0];
+        if(!file) return notify('Select image', true);
+        const name = `banner_${Date.now()}`;
+        const { error: ue } = await client.storage.from('banners').upload(name, file);
+        if (ue) return notify(ue.message, true);
+        const { data: ud } = client.storage.from('banners').getPublicUrl(name);
+        await client.from('banners').insert([{ url: ud.publicUrl }]);
+        notify('Banner Added!'); fetchBanners();
     };
 
     window.addNewsEvent = async () => {
         const title = document.getElementById('eventTitle').value;
-        const category = document.getElementById('eventCategory').value;
-        const date_label = document.getElementById('eventDate').value;
         const file = document.getElementById('eventImage').files[0];
-        
         if(!title || !file) return notify('Title and Image required', true);
-
-        const fileName = `${Date.now()}_${file.name}`;
-        await client.storage.from('news').upload(fileName, file);
-        const { data: urlData } = client.storage.from('news').getPublicUrl(fileName);
-
-        const { error } = await client.from('news_cards').insert([{ title, category, date_label, url: urlData.publicUrl }]);
-        if (error) notify(error.message, true);
-        else {
-            notify('News Card Added!');
-            fetchNewsCards();
-        }
-    };
-
-    // --- Gallery ---
-    const fetchGallery = async () => {
-        const { data, error } = await client.from('gallery').select('*').order('id', { ascending: false });
-        if (error) return;
-
-        const grid = document.getElementById('fullGalleryList');
-        const adminL = document.getElementById('adminGalleryList');
-        grid.innerHTML = ""; adminL.innerHTML = "";
-
-        data.forEach(item => {
-            grid.innerHTML += `<div class="gallery-item"><img src="${item.url}"></div>`;
-            adminL.innerHTML += `<div class="admin-thumb-card"><img src="${item.url}" class="admin-thumb"><button onclick="deleteItem('gallery', ${item.id})" style="background:red; width:100%; font-size:10px;">Remove</button></div>`;
-        });
+        const name = `news_${Date.now()}`;
+        await client.storage.from('news').upload(name, file);
+        const { data: ud } = client.storage.from('news').getPublicUrl(name);
+        await client.from('news_cards').insert([{ title, category: document.getElementById('eventCategory').value, date_label: document.getElementById('eventDate').value, url: ud.publicUrl }]);
+        notify('News Card Added!'); fetchNewsCards();
     };
 
     window.uploadGallery = async () => {
         const file = document.getElementById('galleryInput').files[0];
         if(!file) return notify('Select photo', true);
-
-        const fileName = `${Date.now()}_${file.name}`;
-        await client.storage.from('gallery').upload(fileName, file);
-        const { data: urlData } = client.storage.from('gallery').getPublicUrl(fileName);
-
-        await client.from('gallery').insert([{ url: urlData.publicUrl }]);
-        notify('Gallery image added!');
-        fetchGallery();
-    };
-
-    // --- Admissions ---
-    const fetchAdmissions = async () => {
-        const { data, error } = await client.from('admissions').select('*').order('id', { ascending: false });
-        if (error) return;
-
-        const tbody = document.getElementById('admissionsTableBody');
-        tbody.innerHTML = "";
-        data.forEach(item => {
-            window.admissionsData[item.id] = item;
-            tbody.innerHTML += `<tr><td>${item.student_name}</td><td>${item.target_class}</td><td>${item.phone}</td><td><button onclick="generateAppPDF(${item.id})" style="padding:5px">PDF</button> <button onclick="deleteItem('admissions', ${item.id})" style="background:red; padding:5px">X</button></td></tr>`;
-        });
+        const name = `gallery_${Date.now()}`;
+        await client.storage.from('gallery').upload(name, file);
+        const { data: ud } = client.storage.from('gallery').getPublicUrl(name);
+        await client.from('gallery').insert([{ url: ud.publicUrl }]);
+        notify('Gallery updated!'); fetchGallery();
     };
 
     document.getElementById('admissionForm').onsubmit = async (e) => {
@@ -515,46 +493,31 @@
         const btn = document.getElementById('submitBtn');
         const file = document.getElementById('studentPhoto').files[0];
         if(!file) return notify('Photo required', true);
-
         btn.disabled = true; btn.innerText = "Submitting...";
-        
         try {
-            const fileName = `${Date.now()}_${file.name}`;
-            await client.storage.from('admissions').upload(fileName, file);
-            const { data: urlData } = client.storage.from('admissions').getPublicUrl(fileName);
-
-            const formData = new FormData(e.target);
-            const insertData = {
-                student_name: formData.get('studentName'),
-                dob: formData.get('dob'),
-                phone: formData.get('phone'),
-                target_class: formData.get('targetClass'),
-                photo_url: urlData.publicUrl
-            };
-
-            const { error } = await client.from('admissions').insert([insertData]);
+            const name = `adm_${Date.now()}`;
+            await client.storage.from('admissions').upload(name, file);
+            const { data: ud } = client.storage.from('admissions').getPublicUrl(name);
+            const fd = new FormData(e.target);
+            const { error } = await client.from('admissions').insert([{
+                student_name: fd.get('studentName'),
+                dob: fd.get('dob'),
+                phone: fd.get('phone'),
+                target_class: fd.get('targetClass'),
+                photo_url: ud.publicUrl
+            }]);
             if (error) throw error;
-
-            notify('Application Sent!');
+            notify('Success! Your application was sent.');
             e.target.reset();
-        } catch(err) {
-            notify(err.message, true);
-        } finally {
-            btn.disabled = false; btn.innerText = "Submit Application";
-            fetchAdmissions();
-        }
+        } catch(err) { notify(err.message, true); }
+        finally { btn.disabled = false; btn.innerText = "Submit Application"; fetchAdmissions(); }
     };
 
-    // --- Helpers ---
     window.deleteItem = async (table, id) => {
-        if(!confirm('Are you sure?')) return;
+        if(!confirm('Permanently delete this?')) return;
         const { error } = await client.from(table).delete().eq('id', id);
         if (error) notify(error.message, true);
-        else {
-            notify('Deleted.');
-            // Refresh data
-            fetchNews(); fetchBanners(); fetchNewsCards(); fetchGallery(); fetchAdmissions();
-        }
+        else { notify('Deleted.'); fetchAllData(); }
     };
 
     window.showPage = id => {
@@ -581,7 +544,6 @@
         t.querySelector('.p-name').innerText = app.student_name;
         t.querySelector('.p-dob').innerText = app.dob;
         t.querySelector('.p-photo').src = app.photo_url;
-        
         t.querySelector('.p-photo').onload = async () => {
             const { jsPDF } = window.jspdf;
             const canvas = await html2canvas(t, { useCORS: true, scale: 2 });
@@ -591,15 +553,7 @@
         };
     };
 
-    // Initial Data Fetch
-    window.onload = () => {
-        fetchNews();
-        fetchBanners();
-        fetchNewsCards();
-        fetchGallery();
-        fetchAdmissions();
-    };
-
+    window.onload = fetchAllData;
 </script>
 </body>
 </html>
