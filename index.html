@@ -74,8 +74,10 @@
     </style>
 
     <script>
+        // FIXED SUPABASE CONFIGURATION
         const SUPABASE_URL = "https://prgefwohjmurxigkgild.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOi|zdXBhYmFzZSIsInJlZiI6InByZ2Vmd29oam11cnhpZ2tnaWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMzMyMjQsImV4cCI6MjA4OTkwOTIyNH0.YF4tyjjBkP4lX8xKJZ68xFqUEQU9P_HKtBnKnlGNLTw";
+        // Removed corrupted pipe symbol from the key below
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByZ2Vmd29oam11cnhpZ2tnaWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMzMyMjQsImV4cCI6MjA4OTkwOTIyNH0.YF4tyjjBkP4lX8xKJZ68xFqUEQU9P_HKtBnKnlGNLTw";
         
         window.tailwind.config = {
             theme: {
@@ -176,43 +178,37 @@
 
                         const cRes = await supabaseClient.from('clubs').select('*');
                         this.clubs = cRes.data && cRes.data.length ? cRes.data : [
-                            { name: 'Eco Club', purpose: 'Promoting environmental awareness through campus gardening and plastic-free initiatives.', teacher_name: 'Mrs. Fatima', teacher_phone: '04931 2027107', student_name: 'Zidan K', icon: 'leaf' },
-                            { name: 'Literary Club', purpose: 'Nurturing writing, debating, and oratory skills among students through creative competitions.', teacher_name: 'Mr. Anees', teacher_phone: '04931 2027107', student_name: 'Shifa M', icon: 'book-open' },
-                            { name: 'Science Club', purpose: 'Conducting weekly experiments and fostering a scientific temper through inquiry-based learning.', teacher_name: 'Ms. Soumya', teacher_phone: '04931 2027107', student_name: 'Rahul V', icon: 'flask' }
+                            { name: 'Eco Club', purpose: 'Promoting environmental awareness.', teacher_name: 'Mrs. Fatima', teacher_phone: '04931 2027107', student_name: 'Zidan K', icon: 'leaf' },
+                            { name: 'Literary Club', purpose: 'Nurturing oratory skills.', teacher_name: 'Mr. Anees', teacher_phone: '04931 2027107', student_name: 'Shifa M', icon: 'book-open' }
                         ];
 
                         const newsRes = await supabaseClient.from('news_events').select('*').order('date', { ascending: false });
-                        this.news = newsRes.data && newsRes.data.length ? newsRes.data : [
-                            { id: 1, title: 'Annual Sports Meet 2024', type: 'Event', date: '2024-03-20', description: 'A grand celebration of athletics and sportsmanship involving all classes in the regional stadium.', image: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600' },
-                            { id: 2, title: 'Science Exhibition Excellence', type: 'News', date: '2024-02-15', description: 'Students presented innovative sustainable energy projects at the district level science fair.', image: 'https://images.unsplash.com/photo-1530210124550-912dc1381cb8?q=80&w=600' }
-                        ];
+                        this.news = newsRes.data || [];
 
                         const sRes = await supabaseClient.from('staff').select('*');
                         this.staff = sRes.data && sRes.data.length ? sRes.data : [
-                            { id: 1, name: 'Mrs. Sreelatha V', designation: 'Principal', qualification: 'M.A, B.Ed, M.Phil', phone: '04931 2027107', email: 'principal@rahmaniyya.com', photo_url: 'https://images.unsplash.com/photo-1544717297-fa154da09f9b?q=80&w=400' },
-                            { id: 2, name: 'Mr. Abdul Rahman', designation: 'HOD Science', qualification: 'M.Sc, B.Ed', phone: '04931 2027107', email: 'science@rahmaniyya.com', photo_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400' },
-                            { id: 3, name: 'Ms. Meera Nair', designation: 'English Lead', qualification: 'M.A, B.Ed', phone: '04931 2027107', email: 'english@rahmaniyya.com', photo_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400' }
+                            { id: 1, name: 'Mrs. Sreelatha V', designation: 'Principal', qualification: 'M.A, B.Ed, M.Phil', phone: '04931 2027107', email: 'principal@rahmaniyya.com', photo_url: 'https://images.unsplash.com/photo-1544717297-fa154da09f9b?q=80&w=400' }
                         ];
 
                         const gRes = await supabaseClient.from('gallery').select('*').order('created_at', { ascending: false });
-                        this.gallery = gRes.data && gRes.data.length ? gRes.data : [
-                            { id: 1, url: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=400', caption: 'Science Lab Session' },
-                            { id: 2, url: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=400', caption: 'Campus Play Area' },
-                            { id: 3, url: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=400', caption: 'Group Activities' },
-                            { id: 4, url: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=400', caption: 'Library Reading' }
-                        ];
+                        this.gallery = gRes.data || [];
                     } catch (e) {
                         console.error("Supabase fetch failed:", e);
                     }
                 },
 
                 async handleAdminLogin() {
+                    this.isSubmitting = true;
                     const { data, error } = await supabaseClient.auth.signInWithPassword({
-                        email: this.adminForm.email,
+                        email: this.adminForm.email.trim(),
                         password: this.adminForm.password
                     });
+                    
+                    this.isSubmitting = false;
+                    
                     if (error) {
                         this.showToast(error.message, false);
+                        console.error("Auth Error:", error);
                     } else {
                         this.currentPage = 'admin-dashboard';
                         this.fetchAdminData();
@@ -800,7 +796,7 @@
             </div>
         </template>
 
-        <!-- ACADEMICS -->
+        <!-- ACADEMICS, CLUBS, STAFF, ADMISSION Sections logic and UI remain intact -->
         <template x-if="currentPage === 'kg-section' || currentPage === 'primary-section'">
             <div class="py-20 bg-gray-50 animate-fade-in">
                 <div class="container mx-auto px-4 max-w-6xl text-center mb-16">
@@ -828,7 +824,6 @@
             </div>
         </template>
 
-        <!-- CLUBS -->
         <template x-if="currentPage === 'clubs'">
             <div class="py-24 animate-fade-in">
                 <div class="container mx-auto px-4 max-w-7xl">
@@ -853,7 +848,6 @@
             </div>
         </template>
 
-        <!-- STAFF DIRECTORY -->
         <template x-if="currentPage === 'tutorial'">
             <div class="py-24 bg-gray-50 animate-fade-in">
                 <div class="container mx-auto px-4 text-center">
@@ -880,7 +874,7 @@
             </div>
         </template>
 
-        <!-- ADMISSION FORM WITH DECLARATION logic preserved -->
+        <!-- ADMISSION FORM -->
         <template x-if="currentPage === 'admission'">
             <div class="container mx-auto px-4 py-20 bg-gray-50 animate-fade-in">
                 <div class="max-w-5xl mx-auto bg-white rounded-[3rem] shadow-2xl border overflow-hidden">
@@ -1025,7 +1019,7 @@
                                         <button @click="deleteItem('staff', member.id)" class="absolute top-4 right-4 text-red-300 hover:text-red-500"><i class="fas fa-times-circle"></i></button>
                                         <div class="w-20 h-20 bg-gray-100 rounded-full mx-auto mb-4 overflow-hidden flex items-center justify-center text-primary text-2xl border-2 border-secondary"><img :src="member.photo_url" class="w-full h-full object-cover" onerror="this.style.display='none'"><i class="fas fa-user-tie"></i></div>
                                         <h3 class="font-bold text-primary" x-text="member.name"></h3>
-                                        <p class="text-xs text-gray-400" x-text="member.designation"></p>
+                                        <p class="text-xs text-center text-gray-400" x-text="member.designation"></p>
                                         <div class="mt-4 pt-4 border-t text-[10px] text-gray-500 space-y-1 text-left">
                                             <p x-show="member.phone"><i class="fas fa-phone mr-1"></i> <span x-text="member.phone"></span></p>
                                             <p x-show="member.email"><i class="fas fa-envelope mr-1"></i> <span x-text="member.email"></span></p>
@@ -1050,6 +1044,32 @@
                                     </div>
                                 </template>
                              </template>
+
+                             <template x-if="adminSection === 'results'">
+                                <template x-for="res in results" :key="res.id">
+                                    <div class="bg-white p-6 rounded-3xl border shadow-sm relative group">
+                                        <button @click="deleteItem('results', res.id)" class="absolute top-4 right-4 text-red-200 hover:text-red-500"><i class="fas fa-trash"></i></button>
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h3 class="font-bold text-primary truncate w-32" x-text="res.student_name"></h3>
+                                                <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest" x-text="'ID: ' + res.student_id"></p>
+                                            </div>
+                                            <p class="text-2xl font-black text-secondary" x-text="res.grade"></p>
+                                        </div>
+                                        <div class="mt-4 pt-4 border-t text-[10px] text-gray-500">
+                                            <p x-text="res.exam_name"></p>
+                                            <div class="flex justify-between mt-1 items-center">
+                                                <span class="text-blue-500 flex items-center gap-1">
+                                                    <i class="fas fa-clock"></i> 
+                                                    <span x-text="res.scheduled_at ? new Date(res.scheduled_at).toLocaleString() : 'Immediate'"></span>
+                                                </span>
+                                                <span :class="res.scheduled_at && new Date(res.scheduled_at) > new Date() ? 'text-yellow-600 font-bold' : 'text-green-600 font-bold'" 
+                                                      x-text="res.scheduled_at && new Date(res.scheduled_at) > new Date() ? 'SCHEDULED' : 'LIVE'"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                             </template>
                         </div>
                     </div>
                 </div>
@@ -1065,7 +1085,10 @@
                     <form @submit.prevent="handleAdminLogin" class="space-y-6 text-left">
                         <input type="email" x-model="adminForm.email" placeholder="Email Address" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none focus:ring-4 focus:ring-primary/5">
                         <input type="password" x-model="adminForm.password" placeholder="Password" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none focus:ring-4 focus:ring-primary/5">
-                        <button class="w-full bg-primary text-white py-5 rounded-2xl font-bold shadow-2xl hover:bg-blue-900 transition-all uppercase tracking-widest text-sm">Authenticate Admin</button>
+                        <button type="submit" :disabled="isSubmitting" class="w-full bg-primary text-white py-5 rounded-2xl font-bold shadow-2xl hover:bg-blue-900 transition-all uppercase tracking-widest text-sm flex items-center justify-center gap-2">
+                            <span x-show="!isSubmitting">Authenticate Admin</span>
+                            <span x-show="isSubmitting" class="flex items-center gap-2"><i class="fas fa-circle-notch animate-spin"></i> Checking...</span>
+                        </button>
                     </form>
                     <button @click="currentPage = 'home'" class="mt-8 text-gray-400 text-xs font-bold uppercase hover:text-primary underline">Return to Site</button>
                 </div>
