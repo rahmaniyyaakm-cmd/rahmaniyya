@@ -110,8 +110,8 @@
                 gallery: [],
 
                 milestones: [
-                    { year: '2015', title: 'Foundation Stone', description: 'Inauguration of Rahmaniyya Public School with primary classes.' },
-                    { year: '2018', title: 'KG Excellence', description: 'Launched dedicated activity-based learning center for toddlers.' },
+                    { year: '2003', title: 'Foundation Stone', description: 'Inauguration of Rahmaniyya Public School with primary classes.' },
+                    { year: '2004', title: 'KG Excellence', description: 'Launched dedicated activity-based learning center for toddlers.' },
                     { year: '2022', title: 'Expansion Block', description: 'Inauguration of smart classrooms and digital labs.' },
                     { year: '2024', title: 'Academic Milestone', description: 'Achieved 100% results in district-level assessments.' }
                 ],
@@ -128,7 +128,15 @@
                 },
 
                 // Form States
-                form: { student_name: '', dob: '', gender: '', aadhaar: '', class_applied: '', last_school: '', parent_name: '', parent_phone: '' },
+                form: { student_name: '', dob: '', sex: '', religion: '', nationality: 'Indian', state: 'Kerala', 
+                    address: '', aadhaar: '', photo_url: '',
+                    father_name: '', father_occ: '', 
+                    mother_name: '', mother_occ: '',
+                    guardian_name: '', guardian_occ: '',
+                    parent_phone: '', parent_email: '',
+                    course: '', class_applied: '', duration: '', grade: '',
+                    admission_date: '', transferring_date: '', last_school: ''
+                },
                 resultLogin: { id: '', dob: '' },
                 activeResult: null,
                 viewingResult: false,
