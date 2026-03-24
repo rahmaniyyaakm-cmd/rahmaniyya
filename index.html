@@ -1130,10 +1130,79 @@
                 <template x-if="modalType === 'notification'"><div class="space-y-4"><input type="text" x-model="modalForm.text" placeholder="Notification Content" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"><input type="url" x-model="modalForm.link" placeholder="Link (Optional)" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"></div></template>
                 
                 <template x-if="modalType === 'staff'">
-                    <div class="space-y-4">
-                        <input type="text" x-model="modalForm.name" placeholder="Staff Name" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                        <input type="text" x-model="modalForm.designation" placeholder="Job Title" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                        <input type="text" x-model="modalForm.qualification" placeholder="Qualifications" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                    <div class="space-y-4 text-left">
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 block mb-1">Full Name</label>
+                            <input type="text" x-model="modalForm.name" placeholder="Staff Name" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        </div>
                         <div class="grid grid-cols-2 gap-4">
-                            <input type="tel" x-model="modalForm.phone" placeholder="Phone Number" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                            <input
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 block mb-1">Designation</label>
+                                <input type="text" x-model="modalForm.designation" placeholder="Job Title" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 block mb-1">Qualifications</label>
+                                <input type="text" x-model="modalForm.qualification" placeholder="Degree" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 block mb-1">Phone Number</label>
+                                <input type="tel" x-model="modalForm.phone" placeholder="Contact No" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 block mb-1">Email Address</label>
+                                <input type="email" x-model="modalForm.email" placeholder="Email" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 block mb-1">Photo URL (Optional)</label>
+                            <input type="url" x-model="modalForm.photo_url" placeholder="Direct link to image" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        </div>
+                    </div>
+                </template>
+
+                <template x-if="modalType === 'gallery'"><div class="space-y-4"><input type="url" x-model="modalForm.url" placeholder="Image URL" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"><input type="text" x-model="modalForm.caption" placeholder="Caption (Optional)" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"></div></template>
+                <template x-if="modalType === 'news'"><div class="space-y-4"><input type="text" x-model="modalForm.title" placeholder="News Headline" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"><textarea x-model="modalForm.description" placeholder="Description" required class="w-full p-4 bg-gray-50 border rounded-2xl h-24 outline-none"></textarea><input type="date" x-model="modalForm.date" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"></div></template>
+                
+                <template x-if="modalType === 'club'">
+                    <div class="space-y-4 text-left">
+                        <input type="text" x-model="modalForm.name" placeholder="Club Name" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        <textarea x-model="modalForm.purpose" placeholder="Club Purpose" required class="w-full p-4 bg-gray-50 border rounded-2xl h-24 outline-none"></textarea>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" x-model="modalForm.teacher_name" placeholder="Teacher Coordinator" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                            <input type="tel" x-model="modalForm.teacher_phone" placeholder="Coordinator Phone" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        </div>
+                        <input type="text" x-model="modalForm.student_name" placeholder="Student Representative" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        <input type="text" x-model="modalForm.icon" placeholder="Icon Name (e.g. leaf, book-open, flask)" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                    </div>
+                </template>
+
+                <template x-if="modalType === 'result'">
+                    <div class="space-y-4 text-left">
+                        <input type="text" x-model="modalForm.student_id" placeholder="Student ID (RPS...)" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        <input type="text" x-model="modalForm.student_name" placeholder="Student Name" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="date" x-model="modalForm.dob" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                            <input type="text" x-model="modalForm.grade" placeholder="Overall Grade (A+)" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        </div>
+                        <input type="text" x-model="modalForm.exam_name" placeholder="Exam Name (e.g. Term I)" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 block mb-1">Schedule Publish Time (Optional)</label>
+                            <input type="datetime-local" x-model="modalForm.scheduled_at" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        </div>
+                    </div>
+                </template>
+                <button class="w-full bg-primary text-white py-5 rounded-2xl font-bold shadow-2xl hover:bg-blue-900 transition-all uppercase tracking-widest text-sm">Save Record</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div x-show="toast.show" x-cloak x-transition class="fixed bottom-10 right-10 z-[100] bg-gray-900 text-white px-10 py-4 rounded-3xl shadow-2xl flex items-center gap-4 border border-white/10">
+        <i :class="toast.success ? 'fas fa-check-circle text-green-400' : 'fas fa-exclamation-circle text-red-400'" class="text-xl"></i>
+        <span class="font-bold text-sm tracking-wide" x-text="toast.message"></span>
+    </div>
+
+</body>
+</html>
