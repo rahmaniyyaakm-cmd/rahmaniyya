@@ -187,7 +187,7 @@
 
                         const sRes = await supabaseClient.from('staff').select('*');
                         this.staff = sRes.data && sRes.data.length ? sRes.data : [
-                            { id: 1, name: 'Mrs. Sreelatha V', designation: 'Principal', qualification: 'M.A, B.Ed, M.Phil', phone: '04931 2027107', email: 'principal@rahmaniyya.com', photo_url: 'https://images.unsplash.com/photo-1544717297-fa154da09f9b?q=80&w=400' }
+                            { id: 1, name: 'Mr. Muhammed Sharafudheen K', designation: 'Principal', qualification: 'M.A, B.Ed, M.Phil', phone: '04931 2027107', email: 'principal@rahmaniyya.com', photo_url: 'https://images.unsplash.com/photo-1544717297-fa154da09f9b?q=80&w=400' }
                         ];
 
                         const gRes = await supabaseClient.from('gallery').select('*').order('created_at', { ascending: false });
@@ -474,7 +474,7 @@
             <div class="container mx-auto px-4 flex justify-between items-center">
                 <div class="flex gap-6">
                     <span class="flex items-center gap-2"><i class="fas fa-phone-alt text-secondary"></i> 04931 2027107</span>
-                    <span class="flex items-center gap-2"><i class="fas fa-envelope text-secondary"></i> rahmaniyyaakpdm@gmail.com</span>
+                    <span class="flex items-center gap-2"><i class="fas fa-envelope text-secondary"></i> rahmaniyyaakm@gmail.com</span>
                 </div>
                 <div class="flex gap-4 items-center">
                     <a href="https://www.facebook.com/profile.php?id=61585074544445" target="_blank" class="hover:text-secondary"><i class="fab fa-facebook text-lg"></i></a>
@@ -575,7 +575,7 @@
                                     <h2 class="text-4xl md:text-7xl font-bold mb-6 drop-shadow-2xl" x-text="slide.title"></h2>
                                     <p class="text-lg md:text-2xl mb-10 opacity-90 max-w-2xl mx-auto font-light" x-text="slide.subtitle"></p>
                                     <div class="flex flex-col md:flex-row gap-4 justify-center">
-                                        <button @click="currentPage = 'admission'" class="bg-secondary text-white px-10 py-4 rounded-full font-bold shadow-2xl hover:bg-yellow-600 transition-all hover:scale-105 uppercase tracking-widest text-sm">Admission 2024-25</button>
+                                        <button @click="currentPage = 'admission'" class="bg-secondary text-white px-10 py-4 rounded-full font-bold shadow-2xl hover:bg-yellow-600 transition-all hover:scale-105 uppercase tracking-widest text-sm">Admission 2026-27</button>
                                         <button @click="currentPage = 'profile'" class="bg-white/10 backdrop-blur-md border border-white/20 text-white px-10 py-4 rounded-full font-bold hover:bg-white/20 transition-all">Explore Campus</button>
                                     </div>
                                 </div>
@@ -657,7 +657,7 @@
                                 <div class="absolute -top-10 -right-10 w-48 h-48 bg-secondary/10 rounded-full -z-10 animate-pulse"></div>
                                 <img src="https://images.unsplash.com/photo-1544717297-fa154da09f9b?w=800" class="w-full rounded-[3rem] shadow-2xl border-8 border-white">
                                 <div class="absolute bottom-10 left-10 bg-primary p-8 rounded-3xl text-white shadow-2xl">
-                                    <p class="font-bold text-xl mb-1">Mrs. Sreelatha V</p>
+                                    <p class="font-bold text-xl mb-1">Mr. Muhammed Sharafudheen K</p>
                                     <p class="text-secondary text-[10px] font-bold uppercase tracking-widest">Principal's Message</p>
                                 </div>
                             </div>
@@ -880,7 +880,7 @@
                 <div class="max-w-5xl mx-auto bg-white rounded-[3rem] shadow-2xl border overflow-hidden">
                     <div class="bg-primary text-white p-12 text-center relative overflow-hidden border-b-8 border-secondary">
                         <img src="logo rah.png" alt="RPS" class="h-20 w-auto mx-auto mb-4 brightness-0 invert" onerror="this.style.display='none'">
-                        <h2 class="text-4xl font-bold mb-4 uppercase tracking-tight">ADMISSION PORTAL 2024-25</h2>
+                        <h2 class="text-4xl font-bold mb-4 uppercase tracking-tight">ADMISSION PORTAL 2026-27</h2>
                         <p class="text-secondary font-bold uppercase tracking-widest text-xs">Rahmaniyya Public School Akampadam</p>
                     </div>
                     <form @submit.prevent="submitAdmission" class="p-10 md:p-16 space-y-12">
@@ -1133,7 +1133,7 @@
                 </div>
             </div>
         </div>
-        <div class="container mx-auto px-4 mt-20 pt-8 border-t border-white/5 text-center text-[10px] text-gray-600 font-bold tracking-[0.4em]">© 2024 RAHMANIYYA PUBLIC SCHOOL AKAMPADAM.</div>
+        <div class="container mx-auto px-4 mt-20 pt-8 border-t border-white/5 text-center text-[10px] text-gray-600 font-bold tracking-[0.4em]">© 202 RAHMANIYYA PUBLIC SCHOOL AKAMPADAM.</div>
     </footer>
 
     <!-- ADMIN MODALS -->
