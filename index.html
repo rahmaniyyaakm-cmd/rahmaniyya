@@ -793,7 +793,7 @@
             </div>
         </template>
 
-        <!-- ACADEMICS, CLUBS, STAFF DIRECTORY, ADMISSION sections stay intact with enhanced data fallbacks in fetchPublicData -->
+        <!-- ACADEMICS, CLUBS, STAFF DIRECTORY, ADMISSION sections -->
         <template x-if="currentPage === 'kg-section' || currentPage === 'primary-section'">
             <div class="py-20 bg-gray-50 animate-fade-in">
                 <div class="container mx-auto px-4 max-w-6xl text-center mb-16">
@@ -997,6 +997,37 @@
                         </div>
 
                         <div x-show="['staff', 'gallery', 'clubs', 'results', 'news'].includes(adminSection)" class="grid md:grid-cols-3 gap-6">
+                             <template x-if="adminSection === 'staff'">
+                                <template x-for="member in staff" :key="member.id">
+                                    <div class="bg-white p-8 rounded-3xl border shadow-sm relative group">
+                                        <button @click="deleteItem('staff', member.id)" class="absolute top-4 right-4 text-red-300 hover:text-red-500"><i class="fas fa-times-circle"></i></button>
+                                        <div class="w-20 h-20 bg-gray-100 rounded-full mx-auto mb-4 overflow-hidden flex items-center justify-center text-primary text-2xl border-2 border-secondary"><img :src="member.photo_url" class="w-full h-full object-cover" onerror="this.style.display='none'"><i class="fas fa-user-tie"></i></div>
+                                        <h3 class="font-bold text-center text-primary" x-text="member.name"></h3>
+                                        <p class="text-xs text-center text-gray-400" x-text="member.designation"></p>
+                                    </div>
+                                </template>
+                             </template>
+
+                             <template x-if="adminSection === 'clubs'">
+                                <template x-for="club in clubs" :key="club.id || club.name">
+                                    <div class="bg-white p-6 rounded-3xl border shadow-sm relative group">
+                                        <button @click="deleteItem('clubs', club.id)" class="absolute top-4 right-4 text-red-200 hover:text-red-500"><i class="fas fa-trash"></i></button>
+                                        <div class="flex items-center gap-4 mb-4">
+                                            <div class="w-12 h-12 bg-primary/5 text-primary rounded-xl flex items-center justify-center text-xl">
+                                                <i :class="'fas fa-' + (club.icon || 'users')"></i>
+                                            </div>
+                                            <h3 class="font-bold text-primary" x-text="club.name"></h3>
+                                        </div>
+                                        <p class="text-xs text-gray-500 line-clamp-2 mb-4" x-text="club.purpose"></p>
+                                        <div class="pt-4 border-t space-y-2">
+                                            <p class="text-[10px] text-gray-400 font-bold uppercase">Staff: <span class="text-primary" x-text="club.teacher_name"></span></p>
+                                            <p class="text-[10px] text-gray-400 font-bold uppercase">Phone: <span class="text-primary" x-text="club.teacher_phone"></span></p>
+                                            <p class="text-[10px] text-gray-400 font-bold uppercase">Student: <span class="text-secondary" x-text="club.student_name"></span></p>
+                                        </div>
+                                    </div>
+                                </template>
+                             </template>
+
                              <template x-if="adminSection === 'results'">
                                 <template x-for="res in results" :key="res.id">
                                     <div class="bg-white p-6 rounded-3xl border shadow-sm relative group">
@@ -1095,6 +1126,20 @@
                 <template x-if="modalType === 'staff'"><div class="space-y-4"><input type="text" x-model="modalForm.name" placeholder="Staff Name" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"><input type="text" x-model="modalForm.designation" placeholder="Job Title" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"><input type="text" x-model="modalForm.qualification" placeholder="Qualifications" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"><input type="url" x-model="modalForm.photo_url" placeholder="Photo URL" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"></div></template>
                 <template x-if="modalType === 'gallery'"><div class="space-y-4"><input type="url" x-model="modalForm.url" placeholder="Image URL" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"><input type="text" x-model="modalForm.caption" placeholder="Caption (Optional)" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"></div></template>
                 <template x-if="modalType === 'news'"><div class="space-y-4"><input type="text" x-model="modalForm.title" placeholder="News Headline" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"><textarea x-model="modalForm.description" placeholder="Description" required class="w-full p-4 bg-gray-50 border rounded-2xl h-24 outline-none"></textarea><input type="date" x-model="modalForm.date" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"></div></template>
+                
+                <template x-if="modalType === 'club'">
+                    <div class="space-y-4 text-left">
+                        <input type="text" x-model="modalForm.name" placeholder="Club Name" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        <textarea x-model="modalForm.purpose" placeholder="Club Purpose" required class="w-full p-4 bg-gray-50 border rounded-2xl h-24 outline-none"></textarea>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" x-model="modalForm.teacher_name" placeholder="Teacher Coordinator" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                            <input type="tel" x-model="modalForm.teacher_phone" placeholder="Coordinator Phone" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        </div>
+                        <input type="text" x-model="modalForm.student_name" placeholder="Student Representative" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        <input type="text" x-model="modalForm.icon" placeholder="Icon Name (e.g. leaf, book-open, flask)" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                    </div>
+                </template>
+
                 <template x-if="modalType === 'result'">
                     <div class="space-y-4">
                         <input type="text" x-model="modalForm.student_id" placeholder="Student ID (RPS...)" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
