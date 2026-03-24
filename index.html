@@ -424,13 +424,13 @@
     const fetchGallery = async () => {
         const { data, error } = await client.from('gallery').select('*').order('id', { ascending: false });
         if (error) return;
-        const g = document.getElementById('fullGalleryList');
-        const a = document.getElementById('adminGalleryList');
-        if(!g || !a) return;
-        g.innerHTML = ""; a.innerHTML = "";
+        const grid = document.getElementById('fullGalleryList');
+        const adminL = document.getElementById('adminGalleryList');
+        if(!grid || !adminL) return;
+        grid.innerHTML = ""; adminL.innerHTML = "";
         data.forEach(item => {
-            g.innerHTML += `<div class="gallery-item"><img src="${item.url}"></div>`;
-            a.innerHTML += `<div class="admin-thumb-card"><img src="${item.url}" class="admin-thumb"><button onclick="deleteItem('gallery', ${item.id})" style="background:red; width:100%; font-size:10px;">Remove</button></div>`;
+            grid.innerHTML += `<div class="gallery-item"><img src="${item.url}"></div>`;
+            adminL.innerHTML += `<div class="admin-thumb-card"><img src="${item.url}" class="admin-thumb"><button onclick="deleteItem('gallery', ${item.id})" style="background:red; width:100%; font-size:10px;">Remove</button></div>`;
         });
     };
 
@@ -493,24 +493,46 @@
         const btn = document.getElementById('submitBtn');
         const file = document.getElementById('studentPhoto').files[0];
         if(!file) return notify('Photo required', true);
+        
         btn.disabled = true; btn.innerText = "Submitting...";
+        
         try {
-            const name = `adm_${Date.now()}`;
-            await client.storage.from('admissions').upload(name, file);
+            const name = `adm_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+            
+            // Step 1: Upload Image
+            const { error: uploadError } = await client.storage.from('admissions').upload(name, file);
+            if (uploadError) {
+                console.error("Upload failed:", uploadError);
+                throw new Error("Photo upload failed: " + uploadError.message);
+            }
+
+            // Step 2: Get URL
             const { data: ud } = client.storage.from('admissions').getPublicUrl(name);
+            
+            // Step 3: Insert into DB
             const fd = new FormData(e.target);
-            const { error } = await client.from('admissions').insert([{
+            const { error: dbError } = await client.from('admissions').insert([{
                 student_name: fd.get('studentName'),
                 dob: fd.get('dob'),
                 phone: fd.get('phone'),
                 target_class: fd.get('targetClass'),
                 photo_url: ud.publicUrl
             }]);
-            if (error) throw error;
+            
+            if (dbError) {
+                console.error("DB Error:", dbError);
+                throw new Error("Database save failed: " + dbError.message);
+            }
+
             notify('Success! Your application was sent.');
             e.target.reset();
-        } catch(err) { notify(err.message, true); }
-        finally { btn.disabled = false; btn.innerText = "Submit Application"; fetchAdmissions(); }
+        } catch(err) { 
+            notify(err.message, true); 
+        } finally { 
+            btn.disabled = false; 
+            btn.innerText = "Submit Application"; 
+            fetchAdmissions(); 
+        }
     };
 
     window.deleteItem = async (table, id) => {
