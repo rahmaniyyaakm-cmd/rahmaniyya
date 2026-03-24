@@ -3,579 +3,657 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rahmaniyya Public School | Powered by Supabase</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Rahmaniyya Public School Akampadam - Official Website</title>
     
-    <!-- PDF Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Supabase JS Library -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+    <!-- Core Libraries -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Alpine.js must be loaded after the schoolApp function is defined -->
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     <style>
-        :root {
-            --primary: #002147;
-            --accent: #008080;
-            --ticker-bg: #e74c3c;
-            --light-accent: #e0f2f1;
-            --light: #f4f6f9;
-            --white: #ffffff;
-            --text: #333;
-            --shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        /* Preloader */
-        #preloader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--white); z-index: 9999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .loader-spinner {
-            width: 40px; height: 40px; border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary); border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        * { box-sizing: border-box; }
-        body { 
-            margin: 0; font-family: 'Poppins', sans-serif; 
-            background: var(--light); color: var(--text); line-height: 1.6;
-        }
-
-        /* Notifications */
-        #statusMsg {
-            position: fixed; top: 20px; right: 20px; padding: 15px 25px;
-            border-radius: 8px; color: white; display: none;
-            z-index: 5000; box-shadow: var(--shadow); animation: slideIn 0.3s ease-out;
-        }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-
-        /* Layout & UI */
-        .topbar { background: var(--accent); color: white; padding: 8px 5%; display: flex; justify-content: space-between; font-size: 0.85rem; flex-wrap: wrap; }
-        header { text-align: center; background: var(--white); padding: 20px; border-bottom: 3px solid var(--primary); }
-        header img { max-height: 80px; margin-bottom: 10px; }
-        header h1 { margin: 0; color: var(--primary); font-size: 1.5rem; letter-spacing: 1px; }
-
-        nav { background: var(--primary); padding: 0 5%; display: flex; justify-content: center; flex-wrap: wrap; position: sticky; top: 0; z-index: 1000; }
-        nav a { color: white; padding: 15px 20px; text-decoration: none; cursor: pointer; transition: 0.3s; font-weight: 400; }
-        nav a:hover { background: rgba(255,255,255,0.1); }
-
-        .dropdown { position: relative; }
-        .dropdown-content { display: none; position: absolute; background: var(--primary); min-width: 200px; box-shadow: var(--shadow); top: 100%; left: 0; border-radius: 0 0 8px 8px; }
-        .dropdown:hover .dropdown-content { display: block; }
-        .dropdown-content a { display: block; border-top: 1px solid rgba(255,255,255,0.05); }
-
-        .noticebar { background: var(--ticker-bg); color: white; height: 40px; display: flex; align-items: center; overflow: hidden; position: relative; }
-        .ticker-label { background: #c0392b; padding: 0 20px; height: 100%; display: flex; align-items: center; font-weight: 600; z-index: 10; box-shadow: 5px 0 10px rgba(0,0,0,0.1); }
-        .ticker-wrap { flex: 1; overflow: hidden; white-space: nowrap; }
-        .ticker-move { display: inline-block; white-space: nowrap; padding-left: 100%; animation: ticker-scroll 35s linear infinite; }
-        .ticker-move:hover { animation-play-state: paused; }
-        .ticker-item { display: inline-block; padding: 0 40px; font-weight: 400; }
-        @keyframes ticker-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
-
-        .home-slider-container { width: 100%; background: #000; overflow: hidden; position: relative; height: 450px; }
-        .slider-track { display: flex; width: 100%; height: 100%; position: relative; }
-        .slider-item { min-width: 100%; height: 100%; position: absolute; opacity: 0; transition: opacity 1s; background-size: cover; background-position: center; }
-        .slider-item.active { opacity: 1; }
-
-        .news-section { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; padding: 40px 5%; }
-        .news-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .news-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: var(--shadow); height: 100%; display: flex; flex-direction: column; }
-        .news-card img { width: 100%; height: 180px; object-fit: cover; }
-        .news-content { padding: 15px; flex-grow: 1; }
-        .news-meta { font-size: 0.75rem; color: var(--accent); font-weight: 600; text-transform: uppercase; }
-        .news-title { font-weight: 600; font-size: 1rem; margin: 5px 0; display: block; color: var(--primary); text-decoration: none; }
-
-        .section { display: none; padding: 40px 5%; max-width: 1400px; margin: auto; min-height: 60vh; }
-        .section.active { display: block; animation: fadeIn 0.4s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .card { background: var(--white); padding: 30px; border-radius: 15px; box-shadow: var(--shadow); margin-bottom: 20px; }
+        body { font-family: 'Poppins', sans-serif; scroll-behavior: smooth; }
+        .bg-school-blue { background-color: #1e3a8a; }
+        .text-school-blue { color: #1e3a8a; }
+        .bg-school-gold { background-color: #d4af37; }
+        .text-school-gold { color: #d4af37; }
+        .border-school-gold { border-color: #d4af37; }
         
-        .stats-bar { padding: 50px 5%; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; text-align: center; }
-        .stat-card { background: var(--light-accent); padding: 30px; border-radius: 12px; }
-        .stat-card b { font-size: 2.5rem; display: block; color: var(--primary); }
-        
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
-        .gallery-item { height: 200px; border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); background: #eee; }
-        .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+        [x-cloak] { display: none !important; }
 
-        /* Admin Management */
-        .admin-section-box { background: #fff; padding: 25px; border-radius: 12px; border: 1px solid #ddd; margin-bottom: 30px; }
-        .admin-section-box h3 { margin-top: 0; color: var(--primary); border-bottom: 2px solid var(--accent); display: inline-block; padding-bottom: 5px; margin-bottom: 20px; }
-        .admin-item-list { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
-        .admin-thumb-card { width: 160px; background: white; border: 1px solid #eee; border-radius: 8px; overflow: hidden; text-align: center; padding-bottom: 10px; }
-        .admin-thumb { width: 100%; height: 100px; object-fit: cover; }
-        .admin-notice-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; background: white; margin-bottom: 5px; border-radius: 5px; }
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            background: #f3f4f6;
+            padding: 8px 0;
+            border-bottom: 2px solid #d4af37;
+        }
+        .marquee-content {
+            display: inline-block;
+            animation: marquee 30s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
 
-        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; }
-        button { background: var(--primary); color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        button:hover { background: var(--accent); }
-        button:disabled { background: #999; cursor: wait; }
+        .glass-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
 
-        .main-footer { background: #111; color: #ccc; padding: 60px 5% 20px; display: grid; grid-template-columns: 1fr 2fr; gap: 40px; }
-        .map-box { background: #222; height: 350px; border-radius: 10px; overflow: hidden; }
-        #pdfTemplate { width: 800px; padding: 40px; background: white; position: absolute; left: -9999px; top: 0; color: black; font-family: serif; }
-
-        @media (max-width: 992px) { .news-section, .main-footer { grid-template-columns: 1fr; } .home-slider-container { height: 300px; } }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
     </style>
-</head>
-<body>
 
-<div id="preloader"><div class="loader-spinner"></div><p style="margin-top:10px; font-weight:600;">Rahmaniyya Public School</p></div>
-<div id="statusMsg"></div>
-
-<!-- PDF Template -->
-<div id="pdfTemplate">
-    <div style="text-align:center; border-bottom:2px solid black; padding-bottom:10px; margin-bottom:20px;">
-        <h2>RAHMANIYYA PUBLIC SCHOOL AKAMPADAM</h2>
-        <p>Eranhimangad P.O, Nilambur, Malappuram, Kerala, 679329</p>
-    </div>
-    <div style="display:flex; justify-content:space-between;">
-        <div style="width:70%"><p><strong>Name:</strong> <span class="p-name"></span></p><p><strong>DOB:</strong> <span class="p-dob"></span></p></div>
-        <img class="p-photo" style="width:120px; height:150px; border:1px solid black; object-fit:cover;" src="">
-    </div>
-    <p style="margin-top:60px; border-top:1px solid black; padding-top:20px;">Declaration: I hereby declare that the information provided is correct.</p>
-</div>
-
-<div class="topbar">
-    <div>📧 rahmaniyyaakm@gmail.com</div>
-    <div>📞 04931 202710 | 📱 +91 9400857635</div>
-</div>
-
-<header>
-    <img src="log rah.png" onerror="this.src='https://via.placeholder.com/80?text=RPS'" alt="Logo">
-    <h1>RAHMANIYYA PUBLIC SCHOOL</h1>
-</header>
-
-<nav>
-    <a onclick="showPage('home')">Home</a>
-    <div class="dropdown"><a href="javascript:void(0)">About ▾</a><div class="dropdown-content"><a onclick="showPage('profile')">Profile</a><a onclick="showPage('vision')">Vision</a></div></div>
-    <div class="dropdown"><a href="javascript:void(0)">Academics ▾</a><div class="dropdown-content"><a onclick="showPage('lkg')">Kindergarten</a><a onclick="showPage('class1')">Primary</a></div></div>
-    <div class="dropdown"><a href="javascript:void(0)">Student Affairs ▾</a><div class="dropdown-content"><a onclick="showPage('clubs')">Clubs</a><a onclick="showPage('tutorial')">Tutorial</a></div></div>
-    <a onclick="showPage('admission')">Admission</a>
-    <a onclick="showPage('gallery')">Gallery</a>
-    <a onclick="showPage('admin')">Admin</a>
-</nav>
-
-<div class="noticebar">
-    <div class="ticker-label">Latest News</div>
-    <div class="ticker-wrap"><div class="ticker-move" id="tickerContent">Syncing news...</div></div>
-</div>
-
-<!-- HOME SECTION -->
-<div id="home" class="section active" style="padding:0; max-width:100%;">
-    <div class="home-slider-container"><div class="slider-track" id="homeSliderTrack"></div></div>
-
-    <div class="news-section">
-        <div>
-            <div style="border-bottom:2px solid var(--primary); margin-bottom:20px;"><h3>News & Updates</h3></div>
-            <div class="news-grid" id="newsEventGrid"></div>
-        </div>
-        <div>
-            <div style="border-bottom:2px solid var(--primary); margin-bottom:20px;"><h3>Highlights</h3></div>
-            <ul style="padding-left:20px; font-size:0.9rem;">
-                <li style="margin-bottom:10px;">Admissions open for 2026-27.</li>
-                <li style="margin-bottom:10px;">Visit our new digital gallery.</li>
-                <li style="margin-bottom:10px;">Check news for sports event.</li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="stats-bar"><div class="stat-card"><b>12k+</b><span>Students</span></div><div class="stat-card"><b>100+</b><span>Staffs</span></div><div class="stat-card"><b>16</b><span>Programmes</span></div><div class="stat-card"><b>35+</b><span>Years</span></div></div>
-</div>
-
-<!-- ADMISSION -->
-<div id="admission" class="section">
-    <div class="card">
-        <h2>Admission Application</h2>
-        <form id="admissionForm">
-            <div class="admission-grid">
-                <div class="form-group"><label>Student Name</label><input type="text" name="studentName" required></div>
-                <div class="form-group"><label>Date of Birth</label><input type="date" name="dob" required></div>
-            </div>
-            <div class="form-group"><label>Upload Photo</label><input type="file" id="studentPhoto" accept="image/*" required></div>
-            <div class="admission-grid">
-                <div class="form-group"><label>Phone</label><input type="tel" name="phone" required></div>
-                <div class="form-group"><label>Class</label><select name="targetClass"><option>LKG</option><option>UKG</option><option>Class I</option><option>Class II</option><option>Class III</option><option>Class IV</option></select></div>
-            </div>
-            <button type="submit" id="submitBtn" style="width:100%; margin-top:20px;">Submit Application</button>
-        </form>
-    </div>
-</div>
-
-<!-- OTHER SECTIONS -->
-<div id="profile" class="section"><div class="card"><h2>Profile</h2><p>RPS Akampadam established in 1995...</p></div></div>
-<div id="vision" class="section"><div class="card"><h2>Vision</h2><p>Excellence in holistic development.</p></div></div>
-<div id="lkg" class="section"><div class="card"><h2>Kindergarten</h2><p>Play-based foundational learning.</p></div></div>
-<div id="class1" class="section"><div class="card"><h2>Primary</h2><p>Core curriculum for Classes I-IV.</p></div></div>
-<div id="clubs" class="section"><div class="card"><h2>Clubs</h2><p>IT, Quiz, Eco, and Sports clubs.</p></div></div>
-<div id="tutorial" class="section"><div class="card"><h2>Tutorial</h2><p>Personalized teacher guidance.</p></div></div>
-<div id="gallery" class="section"><div class="card"><h2>Gallery</h2><div id="fullGalleryList" class="gallery-grid"></div></div></div>
-
-<!-- ADMIN -->
-<div id="admin" class="section">
-    <div class="card" style="max-width:900px; margin:auto;">
-        <h2>Admin Management</h2>
-        <div id="loginForm">
-            <input id="email" type="email" placeholder="Email" value="rahmaniyyaakm@gmail.com">
-            <input id="password" type="password" placeholder="Password" value="Rahmaniyya@2004">
-            <button onclick="login()" style="width:100%;">Login</button>
-        </div>
+    <script>
+        // Configuration
+        const SUPABASE_URL = "https://prgefwohjmurxigkgild.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByZ2Vmd29oam11cnhpZ2tnaWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMzMyMjQsImV4cCI6MjA4OTkwOTIyNH0.YF4tyjjBkP4lX8xKJZ68xFqUEQU9P_HKtBnKnlGNLTw";
         
-        <div id="adminPanel" style="display:none">
-            <div class="admin-section-box">
-                <h3>News Ticker</h3>
-                <input id="newsInput" placeholder="Message text">
-                <input id="newsLinkInput" placeholder="Optional URL">
-                <button onclick="addScrollingNews()">Add News</button>
-                <div id="adminNewsList" style="margin-top:15px;"></div>
-            </div>
-
-            <div class="admin-section-box">
-                <h3>Banner Banners</h3>
-                <input type="file" id="sliderInput" accept="image/*">
-                <button onclick="uploadSlider()">Upload Banner Image</button>
-                <div id="adminSliderList" class="admin-item-list"></div>
-            </div>
-
-            <div class="admin-section-box">
-                <h3>News Cards</h3>
-                <input id="eventTitle" placeholder="Title">
-                <input id="eventCategory" placeholder="Category">
-                <input id="eventDate" placeholder="Date Label">
-                <input type="file" id="eventImage" accept="image/*">
-                <button onclick="addNewsEvent()">Add News Card</button>
-                <div id="adminEventList" class="admin-item-list"></div>
-            </div>
-
-            <div class="admin-section-box">
-                <h3>Gallery</h3>
-                <input type="file" id="galleryInput" accept="image/*">
-                <button onclick="uploadGallery()">Upload Gallery Photo</button>
-                <div id="adminGalleryList" class="admin-item-list"></div>
-            </div>
-
-            <div class="admin-section-box">
-                <h3>Received Admissions</h3>
-                <table style="width:100%; border-collapse:collapse;">
-                    <thead><tr style="background:#eee; text-align:left;"><th>Name</th><th>Class</th><th>Phone</th><th>Action</th></tr></thead>
-                    <tbody id="admissionsTableBody"></tbody>
-                </table>
-            </div>
-            <button onclick="logout()" style="background:#444; width:100%; margin-top:20px;">Logout</button>
-        </div>
-    </div>
-</div>
-
-<footer class="main-footer">
-    <div class="footer-col">
-        <h3>Contact</h3>
-        <p>Rahmaniyya Nagar, AKM Road, Akampadam<br>Nilambur, Kerala 679329</p>
-        <p>📞 04931 202710 | 📧 rahmaniyyaakm@gmail.com</p>
-    </div>
-    <div class="footer-col">
-        <h3>Our Location</h3>
-        <div class="map-box">
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3913.6358172089!2d76.22416!3d11.300!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTHCsDE4JzAwLjAiTiA3NsKwMTMnMjcuMCJF!5e0!3m2!1sen!2sin!4v1711200000000!5m2!1sen!2sin&q=Rahmaniyya+Public+School+Akampadam" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
-        </div>
-    </div>
-</footer>
-
-<div style="background:#000; color:#666; text-align:center; padding:15px; font-size:0.8rem;">
-    &copy; 2026 Rahmaniyya Public School. All Rights Reserved.
-</div>
-
-<script>
-    // --- SUPABASE CONFIGURATION ---
-    const SUPABASE_URL = "https://eqpemwrvwftlpmkxvcsb.supabase.co"; 
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxcGVtd3J2d2Z0bHBta3h2Y3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMzI1MDMsImV4cCI6MjA4OTkwODUwM30.NwA31ZzqtNpfjsIFPbZb8KhW1988u3ahiUaheJyibBs"; 
-
-    // Initialize Supabase correctly
-    let client = null;
-    try {
-        if (typeof supabase !== 'undefined') {
-            const { createClient } = supabase;
-            client = createClient(SUPABASE_URL, SUPABASE_KEY);
-        } else {
-            console.error("Supabase library not found!");
-        }
-    } catch (e) {
-        console.error("Supabase Init Error:", e);
-    }
-
-    // --- Notifications & Loader ---
-    window.notify = (msg, isError = false) => {
-        const el = document.getElementById('statusMsg');
-        if (!el) return;
-        el.innerText = msg;
-        el.style.display = 'block';
-        el.style.background = isError ? '#e74c3c' : '#2ecc71';
-        setTimeout(() => { el.style.display = 'none'; }, 5000);
-    };
-
-    const removePreloader = () => {
-        const pre = document.getElementById('preloader');
-        if(pre) pre.style.display = 'none';
-    };
-    
-    // Safety Timeout for Loader
-    setTimeout(removePreloader, 5000);
-
-    // --- AUTH ---
-    const checkUser = async () => {
-        if (!client) return;
-        const { data: { session } } = await client.auth.getSession();
-        const adminPanel = document.getElementById('adminPanel');
-        const loginForm = document.getElementById('loginForm');
-        
-        if (session) {
-            adminPanel.style.display = 'block';
-            loginForm.style.display = 'none';
-        } else {
-            adminPanel.style.display = 'none';
-            loginForm.style.display = 'block';
-        }
-        removePreloader();
-    };
-
-    if (client) {
-        checkUser();
-        client.auth.onAuthStateChange(() => checkUser());
-    }
-
-    window.login = async () => {
-        if (!client) return;
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const { error } = await client.auth.signInWithPassword({ email, password });
-        if (error) notify(error.message, true);
-        else notify('Welcome Admin!');
-    };
-
-    window.logout = async () => {
-        if (!client) return;
-        await client.auth.signOut();
-        notify('Logged out.');
-    };
-
-    // --- DATA FETCHING ---
-    const fetchAllData = async () => {
-        if (!client) return;
-        try {
-            await Promise.allSettled([
-                fetchNews(),
-                fetchBanners(),
-                fetchNewsCards(),
-                fetchGallery(),
-                fetchAdmissions()
-            ]);
-        } catch (err) {
-            console.error("Global Fetch Error:", err);
-        } finally {
-            removePreloader();
-        }
-    };
-
-    const fetchNews = async () => {
-        const { data, error } = await client.from('scrolling_news').select('*').order('id', { ascending: false });
-        if (error) return console.warn("News Error:", error.message);
-        let h1 = ""; let h2 = "";
-        data.forEach(item => {
-            h1 += `<span class="ticker-item">🔔 ${item.text} ${item.link ? `<a href="${item.link}" target="_blank">Link</a>` : ''}</span>`;
-            h2 += `<div class="admin-notice-row"><span>${item.text}</span><button onclick="deleteItem('scrolling_news', ${item.id})" style="background:red; padding:5px 10px;">X</button></div>`;
-        });
-        document.getElementById('tickerContent').innerHTML = h1 || "Welcome to Rahmaniyya Public School!";
-        document.getElementById('adminNewsList').innerHTML = h2 || "No active news.";
-    };
-
-    const fetchBanners = async () => {
-        const { data, error } = await client.from('banners').select('*').order('id', { ascending: false });
-        if (error) return;
-        const t = document.getElementById('homeSliderTrack');
-        const a = document.getElementById('adminSliderList');
-        if(!t || !a) return;
-        t.innerHTML = ""; a.innerHTML = "";
-        if (data && data.length > 0) {
-            data.forEach((item, i) => {
-                t.innerHTML += `<div class="slider-item ${i===0?'active':''}" style="background-image:url('${item.url}')"></div>`;
-                a.innerHTML += `<div class="admin-thumb-card"><img src="${item.url}" class="admin-thumb"><button onclick="deleteItem('banners', ${item.id})" style="background:red; width:100%; font-size:10px;">Delete</button></div>`;
-            });
-            startSliderCycle();
-        } else {
-            t.innerHTML = `<div class="slider-item active" style="background-image:url('https://via.placeholder.com/1200x450?text=Welcome')"></div>`;
-        }
-    };
-
-    const fetchNewsCards = async () => {
-        const { data, error } = await client.from('news_cards').select('*').order('id', { ascending: false });
-        if (error) return;
-        const g = document.getElementById('newsEventGrid');
-        const a = document.getElementById('adminEventList');
-        if(!g || !a) return;
-        g.innerHTML = ""; a.innerHTML = "";
-        data.forEach(item => {
-            g.innerHTML += `<div class="news-card"><img src="${item.url}"><div class="news-content"><span class="news-meta">${item.date_label || 'Today'} / ${item.category || 'News'}</span><b class="news-title">${item.title}</b></div></div>`;
-            a.innerHTML += `<div class="admin-thumb-card" style="width:200px"><img src="${item.url}" class="admin-thumb"><p style="font-size:11px; margin:5px">${item.title}</p><button onclick="deleteItem('news_cards', ${item.id})" style="background:red; width:100%; font-size:10px;">Remove</button></div>`;
-        });
-    };
-
-    const fetchGallery = async () => {
-        const { data, error } = await client.from('gallery').select('*').order('id', { ascending: false });
-        if (error) return;
-        const grid = document.getElementById('fullGalleryList');
-        const adminL = document.getElementById('adminGalleryList');
-        if(!grid || !adminL) return;
-        grid.innerHTML = ""; adminL.innerHTML = "";
-        data.forEach(item => {
-            grid.innerHTML += `<div class="gallery-item"><img src="${item.url}"></div>`;
-            adminL.innerHTML += `<div class="admin-thumb-card"><img src="${item.url}" class="admin-thumb"><button onclick="deleteItem('gallery', ${item.id})" style="background:red; width:100%; font-size:10px;">Remove</button></div>`;
-        });
-    };
-
-    const fetchAdmissions = async () => {
-        const { data, error } = await client.from('admissions').select('*').order('id', { ascending: false });
-        if (error) return;
-        const b = document.getElementById('admissionsTableBody');
-        if(!b) return;
-        b.innerHTML = "";
-        data.forEach(item => {
-            window.admissionsData[item.id] = item;
-            b.innerHTML += `<tr><td>${item.student_name}</td><td>${item.target_class}</td><td>${item.phone}</td><td><button onclick="generateAppPDF(${item.id})" style="padding:5px">PDF</button> <button onclick="deleteItem('admissions', ${item.id})" style="background:red; padding:5px">X</button></td></tr>`;
-        });
-    };
-
-    // --- ACTIONS ---
-    window.addScrollingNews = async () => {
-        const text = document.getElementById('newsInput').value;
-        const link = document.getElementById('newsLinkInput').value;
-        if(!text) return notify('Please enter a message', true);
-        const { error } = await client.from('scrolling_news').insert([{ text, link }]);
-        if (error) notify("Security Error: Check RLS policies in Supabase SQL editor", true);
-        else { notify('News Added!'); fetchNews(); }
-    };
-
-    window.uploadSlider = async () => {
-        const file = document.getElementById('sliderInput').files[0];
-        if(!file) return notify('Select image', true);
-        const name = `banner_${Date.now()}`;
-        const { error: ue } = await client.storage.from('banners').upload(name, file);
-        if (ue) return notify(ue.message, true);
-        const { data: ud } = client.storage.from('banners').getPublicUrl(name);
-        await client.from('banners').insert([{ url: ud.publicUrl }]);
-        notify('Banner Added!'); fetchBanners();
-    };
-
-    window.addNewsEvent = async () => {
-        const title = document.getElementById('eventTitle').value;
-        const file = document.getElementById('eventImage').files[0];
-        if(!title || !file) return notify('Title and Image required', true);
-        const name = `news_${Date.now()}`;
-        await client.storage.from('news').upload(name, file);
-        const { data: ud } = client.storage.from('news').getPublicUrl(name);
-        await client.from('news_cards').insert([{ title, category: document.getElementById('eventCategory').value, date_label: document.getElementById('eventDate').value, url: ud.publicUrl }]);
-        notify('News Card Added!'); fetchNewsCards();
-    };
-
-    window.uploadGallery = async () => {
-        const file = document.getElementById('galleryInput').files[0];
-        if(!file) return notify('Select photo', true);
-        const name = `gallery_${Date.now()}`;
-        await client.storage.from('gallery').upload(name, file);
-        const { data: ud } = client.storage.from('gallery').getPublicUrl(name);
-        await client.from('gallery').insert([{ url: ud.publicUrl }]);
-        notify('Gallery updated!'); fetchGallery();
-    };
-
-    document.getElementById('admissionForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('submitBtn');
-        const file = document.getElementById('studentPhoto').files[0];
-        if(!file) return notify('Photo required', true);
-        
-        btn.disabled = true; btn.innerText = "Submitting...";
-        
-        try {
-            const name = `adm_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-            
-            // Step 1: Upload Image
-            const { error: uploadError } = await client.storage.from('admissions').upload(name, file);
-            if (uploadError) {
-                console.error("Upload failed:", uploadError);
-                throw new Error("Photo upload failed: " + uploadError.message);
+        // Tailwind Theme
+        window.tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e3a8a',
+                        secondary: '#d4af37',
+                    }
+                }
             }
-
-            // Step 2: Get URL
-            const { data: ud } = client.storage.from('admissions').getPublicUrl(name);
-            
-            // Step 3: Insert into DB
-            const fd = new FormData(e.target);
-            const { error: dbError } = await client.from('admissions').insert([{
-                student_name: fd.get('studentName'),
-                dob: fd.get('dob'),
-                phone: fd.get('phone'),
-                target_class: fd.get('targetClass'),
-                photo_url: ud.publicUrl
-            }]);
-            
-            if (dbError) {
-                console.error("DB Error:", dbError);
-                throw new Error("Database save failed: " + dbError.message);
-            }
-
-            notify('Success! Your application was sent.');
-            e.target.reset();
-        } catch(err) { 
-            notify(err.message, true); 
-        } finally { 
-            btn.disabled = false; 
-            btn.innerText = "Submit Application"; 
-            fetchAdmissions(); 
-        }
-    };
-
-    window.deleteItem = async (table, id) => {
-        if(!confirm('Permanently delete this?')) return;
-        const { error } = await client.from(table).delete().eq('id', id);
-        if (error) notify(error.message, true);
-        else { notify('Deleted.'); fetchAllData(); }
-    };
-
-    window.showPage = id => {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    let sIdx = 0; let sTimer;
-    function startSliderCycle() {
-        if(sTimer) clearInterval(sTimer);
-        const items = document.querySelectorAll('.slider-item');
-        if(items.length < 2) return;
-        sTimer = setInterval(() => {
-            items[sIdx].classList.remove('active');
-            sIdx = (sIdx + 1) % items.length;
-            items[sIdx].classList.add('active');
-        }, 6000);
-    }
-
-    window.generateAppPDF = async (id) => {
-        const app = window.admissionsData[id];
-        const t = document.getElementById('pdfTemplate');
-        t.querySelector('.p-name').innerText = app.student_name;
-        t.querySelector('.p-dob').innerText = app.dob;
-        t.querySelector('.p-photo').src = app.photo_url;
-        t.querySelector('.p-photo').onload = async () => {
-            const { jsPDF } = window.jspdf;
-            const canvas = await html2canvas(t, { useCORS: true, scale: 2 });
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, (canvas.height*210)/canvas.width);
-            pdf.save(`Admission_${app.student_name}.pdf`);
         };
-    };
 
-    window.onload = fetchAllData;
-</script>
+        // Initialize Supabase Client
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Define the schoolApp function globally so Alpine can access it
+        window.schoolApp = function() {
+            return {
+                currentPage: 'home',
+                mobileMenuOpen: false,
+                currentSlide: 0,
+                isSubmitting: false,
+                
+                // Content States
+                notifications: [],
+                activeNotifications: [],
+                sliderImages: [
+                    { id: 1, url: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=1200', title: 'Quality Education', subtitle: 'Preparing students for global success' },
+                    { id: 2, url: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&q=80&w=1200', title: 'Holistic Environment', subtitle: 'Nurturing talent and values since inception' }
+                ],
+                news: [],
+                clubs: [],
+                staff: [],
+                admissionApplications: [],
+                results: [],
+                gallery: [],
+
+                // Static Content
+                milestones: [
+                    { year: '2015', title: 'Foundation Stone', description: 'Inauguration of Rahmaniyya Public School with primary classes.' },
+                    { year: '2018', title: 'KG Excellence', description: 'Launched dedicated activity-based learning center for toddlers.' },
+                    { year: '2022', title: 'Expansion Block', description: 'Inauguration of smart classrooms and digital labs.' }
+                ],
+                academicData: {
+                    kg: [
+                        { name: 'LKG', level: 'Junior Kindergarten', overview: 'Focuses on social skills and coordination.', subjects: ['English', 'Numbers', 'Art'], outcomes: 'Basic communication skills.' },
+                        { name: 'UKG', level: 'Senior Kindergarten', overview: 'Prepares students for primary reading and writing.', subjects: ['Literacy', 'Numeracy', 'EVS'], outcomes: 'Reading readiness.' }
+                    ],
+                    primary: [
+                        { name: 'Class I - IV', level: 'Primary Education', overview: 'Robust curriculum building strong foundations.', subjects: ['English', 'Malayalam', 'Math', 'Science', 'IT'], outcomes: 'Analytical thinking.' }
+                    ]
+                },
+
+                // Form States
+                form: { student_name: '', dob: '', gender: '', aadhaar: '', class_applied: '', last_school: '', parent_name: '', parent_phone: '' },
+                resultLogin: { id: '', dob: '' },
+                activeResult: null,
+                viewingResult: false,
+                adminForm: { email: '', password: '' },
+                adminSection: 'notifications',
+                modalOpen: false,
+                modalType: '',
+                modalForm: {},
+                toast: { show: false, message: '', success: true },
+
+                init() {
+                    this.fetchPublicData();
+                    this.startSlider();
+                    setTimeout(() => lucide.createIcons(), 200);
+                },
+
+                async fetchPublicData() {
+                    try {
+                        const { data: nData } = await supabaseClient.from('notifications').select('*').order('id', { ascending: false });
+                        this.notifications = nData || [];
+                        this.activeNotifications = this.notifications.filter(n => n.active);
+
+                        const { data: cData } = await supabaseClient.from('clubs').select('*');
+                        this.clubs = cData || [
+                            { id: 1, name: 'Eco Club', purpose: 'Promoting environmental awareness', teacher_name: 'Mrs. Fatima', teacher_phone: '9847123456', student_name: 'Rahid K' },
+                            { id: 2, name: 'Literary Club', purpose: 'Developing language and oration skills', teacher_name: 'Mr. Anees', teacher_phone: '9847654321', student_name: 'Shifa M' }
+                        ];
+
+                        const { data: newsData } = await supabaseClient.from('news_events').select('*').order('date', { ascending: false });
+                        this.news = newsData || [
+                            { id: 1, title: 'Annual Sports Meet 2024', type: 'Event', date: '2024-03-20', description: 'A day filled with athletics and sportsmanship.', image: null }
+                        ];
+
+                        const { data: staffData } = await supabaseClient.from('staff').select('*');
+                        this.staff = staffData || [
+                            { id: 1, name: 'School Staff Member', designation: 'Faculty', qualification: 'B.Ed / M.Ed', phone: '04931 2027107' }
+                        ];
+
+                        const { data: gallData } = await supabaseClient.from('gallery').select('*').order('created_at', { ascending: false });
+                        this.gallery = gallData || [
+                            { id: 1, url: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80&w=400', caption: 'Academic Activity' }
+                        ];
+                    } catch (e) {
+                        console.error("Supabase data fetch error:", e);
+                    }
+                },
+
+                async handleAdminLogin() {
+                    const { data, error } = await supabaseClient.auth.signInWithPassword({
+                        email: this.adminForm.email,
+                        password: this.adminForm.password
+                    });
+                    if (error) {
+                        this.showToast(error.message, false);
+                    } else {
+                        this.currentPage = 'admin-dashboard';
+                        this.fetchAdminData();
+                    }
+                },
+
+                async logout() {
+                    await supabaseClient.auth.signOut();
+                    this.currentPage = 'home';
+                },
+
+                async fetchAdminData() {
+                    const { data: adm } = await supabaseClient.from('admissions').select('*').order('created_at', { ascending: false });
+                    this.admissionApplications = adm || [];
+                    const { data: res } = await supabaseClient.from('results').select('*');
+                    this.results = res || [];
+                },
+
+                async submitAdmission() {
+                    this.isSubmitting = true;
+                    const ref_id = 'RPS-' + Date.now().toString().slice(-6);
+                    const { error } = await supabaseClient.from('admissions').insert([{ ...this.form, ref_id }]);
+                    
+                    if (error) {
+                        this.showToast("Application failed: " + error.message, false);
+                    } else {
+                        this.showToast("Application Submitted! Ref ID: " + ref_id, true);
+                        this.form = { student_name: '', dob: '', gender: '', aadhaar: '', class_applied: '', last_school: '', parent_name: '', parent_phone: '' };
+                        this.currentPage = 'home';
+                    }
+                    this.isSubmitting = false;
+                },
+
+                async checkResult() {
+                    const { data } = await supabaseClient.from('results')
+                        .select('*')
+                        .eq('student_id', this.resultLogin.id)
+                        .eq('dob', this.resultLogin.dob)
+                        .eq('published', true)
+                        .single();
+
+                    if (data) {
+                        this.activeResult = data;
+                        this.viewingResult = true;
+                    } else {
+                        this.showToast("Invalid credentials or unpublished result.", false);
+                    }
+                },
+
+                showModal(type) {
+                    this.modalType = type;
+                    this.modalForm = {};
+                    this.modalOpen = true;
+                },
+
+                async handleModalSubmit() {
+                    const table = this.modalType === 'notification' ? 'notifications' : 
+                                  this.modalType === 'staff' ? 'staff' : 'results';
+                    const payload = { ...this.modalForm };
+                    if (this.modalType === 'notification') payload.active = true;
+                    if (this.modalType === 'result') payload.published = false;
+
+                    const { error } = await supabaseClient.from(table).insert([payload]);
+                    if (!error) {
+                        this.modalOpen = false;
+                        this.fetchPublicData();
+                        this.fetchAdminData();
+                        this.showToast("Record Saved!", true);
+                    }
+                },
+
+                async deleteItem(table, id) {
+                    if (confirm("Delete this item permanently?")) {
+                        await supabaseClient.from(table).delete().eq('id', id);
+                        this.fetchPublicData();
+                        this.fetchAdminData();
+                    }
+                },
+
+                async toggleNotificationStatus(note) {
+                    await supabaseClient.from('notifications').update({ active: !note.active }).eq('id', note.id);
+                    this.fetchPublicData();
+                },
+
+                startSlider() {
+                    setInterval(() => { this.nextSlide(); }, 5000);
+                },
+                nextSlide() { this.currentSlide = (this.currentSlide + 1) % this.sliderImages.length; },
+                prevSlide() { this.currentSlide = (this.currentSlide - 1 + this.sliderImages.length) % this.sliderImages.length; },
+
+                showToast(message, success) {
+                    this.toast = { show: true, message, success };
+                    setTimeout(() => this.toast.show = false, 4000);
+                },
+                formatDate(d) {
+                    return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                },
+
+                downloadAdmissionPDF(app) {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    doc.setFillColor(30, 58, 138);
+                    doc.rect(0, 0, 210, 40, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(22);
+                    doc.text("Rahmaniyya Public School", 105, 18, { align: 'center' });
+                    doc.setFontSize(10);
+                    doc.text("Admission Application Form - Reference: " + app.ref_id, 105, 28, { align: 'center' });
+                    doc.setTextColor(0, 0, 0);
+                    doc.setFontSize(12);
+                    doc.text(`Student Name: ${app.student_name}`, 20, 60);
+                    doc.text(`Date of Birth: ${app.dob}`, 20, 70);
+                    doc.text(`Parent/Guardian: ${app.parent_name}`, 20, 80);
+                    doc.text(`Phone: ${app.parent_phone}`, 20, 90);
+                    doc.text(`Aadhaar: ${app.aadhaar}`, 20, 100);
+                    doc.save(`Admission_${app.student_name}.pdf`);
+                }
+            };
+        };
+    </script>
+</head>
+<body x-data="schoolApp()" x-cloak class="bg-gray-50 text-gray-800">
+
+    <!-- HEADER & NAVIGATION -->
+    <header class="sticky top-0 z-50 glass-nav border-b shadow-sm">
+        <div class="bg-primary text-white py-1 text-xs hidden md:block">
+            <div class="container mx-auto px-4 flex justify-between items-center">
+                <div class="flex gap-4">
+                    <span><i class="fas fa-phone mr-2"></i> 04931 2027107</span>
+                    <span><i class="fas fa-envelope mr-2"></i> rahmaniyyaakpdm@gmail.com</span>
+                </div>
+                <div class="flex gap-4 items-center">
+                    <a href="https://www.facebook.com/profile.php?id=61585074544445" target="_blank" class="hover:text-secondary"><i class="fab fa-facebook"></i></a>
+                    <a href="https://www.instagram.com/rahmaniyya_public_school_?igsh=MXUwZW1vam1yanU1MA==" target="_blank" class="hover:text-secondary"><i class="fab fa-instagram"></i></a>
+                    <button @click="currentPage = 'admin-login'" class="bg-secondary px-3 py-1 rounded text-white font-semibold">Admin Login</button>
+                </div>
+            </div>
+        </div>
+
+        <nav class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3 cursor-pointer" @click="currentPage = 'home'">
+                <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xl">R</div>
+                <div>
+                    <h1 class="font-bold text-lg md:text-xl text-primary leading-tight">Rahmaniyya Public School</h1>
+                    <p class="text-[10px] md:text-xs text-secondary font-medium uppercase tracking-widest">Akampadam, Nilambur</p>
+                </div>
+            </div>
+
+            <div class="hidden lg:flex gap-6 items-center font-medium text-gray-700">
+                <a href="#" @click="currentPage = 'home'" :class="currentPage === 'home' ? 'text-primary border-b-2 border-secondary' : 'hover:text-primary'">Home</a>
+                
+                <div class="relative group">
+                    <button class="flex items-center gap-1 hover:text-primary">About Us <i class="fas fa-chevron-down text-[10px]"></i></button>
+                    <div class="absolute hidden group-hover:block bg-white shadow-xl border rounded-lg py-2 w-48 mt-0 animate-fade-in">
+                        <a href="#" @click="currentPage = 'profile'" class="block px-4 py-2 hover:bg-gray-100">Profile</a>
+                        <a href="#" @click="currentPage = 'vision'" class="block px-4 py-2 hover:bg-gray-100">Vision</a>
+                        <a href="#" @click="currentPage = 'milestones'" class="block px-4 py-2 hover:bg-gray-100">Milestones</a>
+                    </div>
+                </div>
+
+                <div class="relative group">
+                    <button class="flex items-center gap-1 hover:text-primary">Academics <i class="fas fa-chevron-down text-[10px]"></i></button>
+                    <div class="absolute hidden group-hover:block bg-white shadow-xl border rounded-lg py-2 w-48 mt-0">
+                        <a href="#" @click="currentPage = 'kg-section'" class="block px-4 py-2 hover:bg-gray-100">KG Section</a>
+                        <a href="#" @click="currentPage = 'primary-section'" class="block px-4 py-2 hover:bg-gray-100">Primary Section</a>
+                    </div>
+                </div>
+
+                <a href="#" @click="currentPage = 'admission'" class="hover:text-primary">Admission</a>
+                <a href="#" @click="currentPage = 'results'" class="hover:text-primary">Results</a>
+                <a href="#" @click="currentPage = 'gallery'" class="hover:text-primary">Gallery</a>
+            </div>
+
+            <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden text-primary text-2xl">
+                <i :class="mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'"></i>
+            </button>
+        </nav>
+
+        <div x-show="mobileMenuOpen" x-transition class="lg:hidden bg-white border-t px-4 py-6 absolute w-full shadow-lg z-40">
+            <div class="flex flex-col gap-4 font-semibold text-lg">
+                <a @click="currentPage = 'home'; mobileMenuOpen = false" href="#">Home</a>
+                <a @click="currentPage = 'profile'; mobileMenuOpen = false" href="#">About Us</a>
+                <a @click="currentPage = 'admission'; mobileMenuOpen = false" href="#">Admission</a>
+                <a @click="currentPage = 'results'; mobileMenuOpen = false" href="#">Results</a>
+                <a @click="currentPage = 'gallery'; mobileMenuOpen = false" href="#">Gallery</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- NOTIFICATION MARQUEE -->
+    <div x-show="currentPage === 'home' && activeNotifications.length > 0" class="marquee-container">
+        <div class="marquee-content px-4">
+            <template x-for="note in activeNotifications" :key="note.id">
+                <span class="mx-8 font-medium">
+                    <span class="text-primary bg-secondary/20 px-2 py-0.5 rounded text-xs mr-2 font-bold uppercase">News</span>
+                    <span x-text="note.text"></span>
+                    <a x-show="note.link" :href="note.link" class="ml-2 text-primary underline font-bold" target="_blank">Read More</a>
+                </span>
+            </template>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="min-h-screen">
+        <!-- HOME PAGE -->
+        <template x-if="currentPage === 'home'">
+            <div>
+                <section class="relative h-[400px] md:h-[600px] overflow-hidden bg-gray-200">
+                    <template x-for="(slide, index) in sliderImages" :key="slide.id">
+                        <div x-show="currentSlide === index" class="absolute inset-0 transition-opacity duration-1000">
+                            <img :src="slide.url" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black/40 flex items-center justify-center text-center px-4">
+                                <div class="max-w-4xl text-white">
+                                    <h2 class="text-4xl md:text-6xl font-bold mb-4" x-text="slide.title"></h2>
+                                    <p class="text-lg md:text-2xl mb-8 opacity-90" x-text="slide.subtitle"></p>
+                                    <button @click="currentPage = 'admission'" class="bg-secondary text-white px-8 py-3 rounded-full font-bold shadow-xl">Start Your Journey</button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </section>
+
+                <!-- Features Cards -->
+                <section class="py-16 container mx-auto px-4 grid md:grid-cols-3 gap-8">
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border-t-4 border-primary card-hover">
+                        <h3 class="text-xl font-bold mb-3">Excellence</h3>
+                        <p class="text-gray-600">Committed to providing high-quality educational standards for every child.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border-t-4 border-secondary card-hover">
+                        <h3 class="text-xl font-bold mb-3">Integrity</h3>
+                        <p class="text-gray-600">Nurturing honesty, respect, and character in a safe environment.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border-t-4 border-primary card-hover">
+                        <h3 class="text-xl font-bold mb-3">Innovation</h3>
+                        <p class="text-gray-600">Embracing modern learning tools and facilities for future readiness.</p>
+                    </div>
+                </section>
+            </div>
+        </template>
+
+        <!-- PROFILE -->
+        <template x-if="currentPage === 'profile'">
+            <div class="container mx-auto px-4 py-16">
+                <div class="max-w-4xl mx-auto bg-white p-10 rounded-3xl shadow-lg">
+                    <h2 class="text-4xl font-bold text-primary mb-6">School Profile</h2>
+                    <p class="text-lg text-gray-700 leading-relaxed mb-8">
+                        Rahmaniyya Public School, Akampadam, is dedicated to nurturing young minds in Eranhimangad, Nilambur. With a focus on holistic development, we bridge the gap between academic rigor and creative expression.
+                    </p>
+                    <div class="border-t pt-8 grid md:grid-cols-2 gap-10">
+                        <div>
+                            <h3 class="font-bold text-secondary text-xl mb-4">Values</h3>
+                            <ul class="list-disc list-inside text-gray-600 space-y-2">
+                                <li>Respect for all</li>
+                                <li>Academic Rigor</li>
+                                <li>Social Responsibility</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-secondary text-xl mb-4">Contact</h3>
+                            <p class="text-gray-600">Eranhimangad P.O, Nilambur</p>
+                            <p class="text-gray-600">Kerala, 679329</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- ADMISSION -->
+        <template x-if="currentPage === 'admission'">
+            <div class="container mx-auto px-4 py-16">
+                <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl p-8 border">
+                    <div class="text-center mb-10">
+                        <h2 class="text-3xl font-bold text-primary mb-2">Admission 2024-25</h2>
+                        <p class="text-gray-500">Please fill out the form accurately.</p>
+                    </div>
+                    <form @submit.prevent="submitAdmission" class="grid md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <label class="block text-sm font-bold">Student Name</label>
+                            <input type="text" x-model="form.student_name" placeholder="Full Name" required class="w-full p-3 border rounded-xl">
+                        </div>
+                        <div class="space-y-4">
+                            <label class="block text-sm font-bold">Date of Birth</label>
+                            <input type="date" x-model="form.dob" required class="w-full p-3 border rounded-xl">
+                        </div>
+                        <div class="space-y-4">
+                            <label class="block text-sm font-bold">Gender</label>
+                            <select x-model="form.gender" required class="w-full p-3 border rounded-xl">
+                                <option value="">Select</option>
+                                <option>Male</option>
+                                <option>Female</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="space-y-4">
+                            <label class="block text-sm font-bold">Aadhaar (12 digits)</label>
+                            <input type="text" x-model="form.aadhaar" placeholder="0000 0000 0000" pattern="\d{12}" required class="w-full p-3 border rounded-xl">
+                        </div>
+                        <div class="space-y-4">
+                            <label class="block text-sm font-bold">Parent/Guardian Name</label>
+                            <input type="text" x-model="form.parent_name" placeholder="Name" required class="w-full p-3 border rounded-xl">
+                        </div>
+                        <div class="space-y-4">
+                            <label class="block text-sm font-bold">Contact Phone</label>
+                            <input type="tel" x-model="form.parent_phone" placeholder="9944..." required class="w-full p-3 border rounded-xl">
+                        </div>
+                        <button type="submit" :disabled="isSubmitting" class="md:col-span-2 bg-primary text-white py-4 rounded-xl font-bold hover:bg-blue-900 transition-colors">
+                            <span x-show="!isSubmitting">Submit Application</span>
+                            <span x-show="isSubmitting">Processing...</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </template>
+
+        <!-- RESULTS -->
+        <template x-if="currentPage === 'results'">
+            <div class="container mx-auto px-4 py-16 flex justify-center">
+                <div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl border">
+                    <h2 class="text-2xl font-bold text-primary mb-6 text-center">Results Portal</h2>
+                    <div x-show="!viewingResult">
+                        <form @submit.prevent="checkResult" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold uppercase mb-1">Student ID</label>
+                                <input type="text" x-model="resultLogin.id" placeholder="e.g., RPS2024001" class="w-full p-3 border rounded-xl">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase mb-1">DOB</label>
+                                <input type="date" x-model="resultLogin.dob" class="w-full p-3 border rounded-xl">
+                            </div>
+                            <button class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-lg">Check Status</button>
+                        </form>
+                    </div>
+                    <div x-show="viewingResult" class="animate-fade-in">
+                        <div class="p-6 bg-gray-50 rounded-2xl mb-6 border">
+                            <p class="text-sm text-gray-500 uppercase font-bold mb-1">Name</p>
+                            <p class="font-bold text-lg mb-4" x-text="activeResult?.student_name"></p>
+                            <p class="text-sm text-gray-500 uppercase font-bold mb-1">Overall Performance</p>
+                            <p class="text-primary font-bold text-3xl" x-text="activeResult?.grade"></p>
+                        </div>
+                        <button @click="viewingResult = false" class="text-primary font-bold hover:underline">Search Another ID</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- ADMIN DASHBOARD -->
+        <template x-if="currentPage === 'admin-dashboard'">
+            <div class="flex h-screen bg-gray-100">
+                <div class="w-64 bg-primary text-white p-6 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-xl mb-10 text-secondary">RPS ADMIN</h3>
+                        <nav class="space-y-2">
+                            <button @click="adminSection = 'notifications'" :class="adminSection === 'notifications' ? 'bg-white/20' : ''" class="w-full text-left p-3 rounded-xl hover:bg-white/10 transition-colors">Notifications</button>
+                            <button @click="adminSection = 'admissions'" :class="adminSection === 'admissions' ? 'bg-white/20' : ''" class="w-full text-left p-3 rounded-xl hover:bg-white/10 transition-colors">Admissions</button>
+                            <button @click="adminSection = 'results'" :class="adminSection === 'results' ? 'bg-white/20' : ''" class="w-full text-left p-3 rounded-xl hover:bg-white/10 transition-colors">Results</button>
+                        </nav>
+                    </div>
+                    <button @click="logout()" class="bg-red-500 text-white py-3 rounded-xl font-bold">Logout</button>
+                </div>
+                <div class="flex-1 p-10 overflow-y-auto">
+                    <header class="flex justify-between items-center mb-10">
+                        <h2 class="text-3xl font-bold text-primary uppercase" x-text="adminSection"></h2>
+                        <button @click="showModal(adminSection === 'notifications' ? 'notification' : 'result')" x-show="adminSection !== 'admissions'" class="bg-secondary text-white px-6 py-2 rounded-xl font-bold">+ New Entry</button>
+                    </header>
+
+                    <div x-show="adminSection === 'notifications'" class="space-y-4">
+                        <template x-for="note in notifications" :key="note.id">
+                            <div class="bg-white p-5 rounded-2xl flex justify-between items-center shadow-sm">
+                                <div>
+                                    <p class="font-bold" x-text="note.text"></p>
+                                    <p class="text-xs text-gray-400" x-text="note.link || 'No link'"></p>
+                                </div>
+                                <div class="flex gap-4">
+                                    <button @click="toggleNotificationStatus(note)" :class="note.active ? 'text-green-500' : 'text-gray-300'"><i class="fas fa-power-off text-xl"></i></button>
+                                    <button @click="deleteItem('notifications', note.id)" class="text-red-500"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div x-show="adminSection === 'admissions'">
+                        <div class="bg-white rounded-2xl shadow-sm overflow-hidden border">
+                            <table class="w-full text-left">
+                                <thead class="bg-gray-50 border-b">
+                                    <tr>
+                                        <th class="p-4">Ref ID</th>
+                                        <th class="p-4">Student</th>
+                                        <th class="p-4">Parent</th>
+                                        <th class="p-4 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="app in admissionApplications" :key="app.id">
+                                        <tr class="border-b">
+                                            <td class="p-4 font-mono text-sm" x-text="app.ref_id"></td>
+                                            <td class="p-4 font-bold" x-text="app.student_name"></td>
+                                            <td class="p-4 text-sm" x-text="app.parent_phone"></td>
+                                            <td class="p-4 text-right">
+                                                <button @click="downloadAdmissionPDF(app)" class="bg-gray-100 px-3 py-1 rounded text-primary text-xs font-bold">PDF</button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- ADMIN LOGIN -->
+        <template x-if="currentPage === 'admin-login'">
+            <div class="flex items-center justify-center min-h-[80vh] px-4">
+                <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md border">
+                    <h2 class="text-2xl font-bold text-primary text-center mb-8">Admin Access</h2>
+                    <form @submit.prevent="handleAdminLogin" class="space-y-6">
+                        <input type="email" x-model="adminForm.email" placeholder="Email" required class="w-full p-3 border rounded-xl">
+                        <input type="password" x-model="adminForm.password" placeholder="Password" required class="w-full p-3 border rounded-xl">
+                        <button class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-lg">Secure Login</button>
+                    </form>
+                    <button @click="currentPage = 'home'" class="mt-6 text-gray-400 text-sm block mx-auto underline">Back to School Site</button>
+                </div>
+            </div>
+        </template>
+    </main>
+
+    <!-- FOOTER -->
+    <footer x-show="currentPage !== 'admin-dashboard'" class="bg-primary text-white py-12 mt-16 border-t border-white/10">
+        <div class="container mx-auto px-4 grid md:grid-cols-3 gap-12 text-center md:text-left">
+            <div>
+                <h3 class="font-bold text-xl mb-4 text-secondary">Rahmaniyya Public School</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">Dedicated to the holistic educational development of students in Akampadam, Nilambur since inception.</p>
+            </div>
+            <div>
+                <h3 class="font-bold text-xl mb-4">Contact</h3>
+                <p class="text-gray-400 text-sm">Eranhimangad P.O, Nilambur, Malappuram, Kerala - 679329</p>
+                <p class="text-gray-300 mt-2">04931 2027107</p>
+                <div class="flex justify-center md:justify-start gap-6 mt-6">
+                    <a href="https://www.facebook.com/profile.php?id=61585074544445" target="_blank" class="hover:text-secondary"><i class="fab fa-facebook text-2xl"></i></a>
+                    <a href="https://www.instagram.com/rahmaniyya_public_school_?igsh=MXUwZW1vam1yanU1MA==" target="_blank" class="hover:text-secondary"><i class="fab fa-instagram text-2xl"></i></a>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-bold text-xl mb-4">Navigation</h3>
+                <div class="space-y-2">
+                    <a @click="currentPage = 'home'" class="block text-gray-400 cursor-pointer hover:text-white">Home</a>
+                    <a @click="currentPage = 'admission'" class="block text-gray-400 cursor-pointer hover:text-white">Admission</a>
+                    <a @click="currentPage = 'results'" class="block text-gray-400 cursor-pointer hover:text-white">Student Results</a>
+                </div>
+            </div>
+        </div>
+        <div class="container mx-auto px-4 mt-12 pt-8 border-t border-white/5 text-center text-xs text-gray-500">
+            © 2024 Rahmaniyya Public School. Akampadam, Nilambur.
+        </div>
+    </footer>
+
+    <!-- ADMIN MODAL -->
+    <div x-show="modalOpen" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div @click.away="modalOpen = false" class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
+            <h3 class="text-2xl font-bold mb-6 text-primary" x-text="'New ' + modalType"></h3>
+            <form @submit.prevent="handleModalSubmit" class="space-y-4">
+                <template x-if="modalType === 'notification'">
+                    <div class="space-y-4">
+                        <input type="text" x-model="modalForm.text" placeholder="Notification Content" required class="w-full p-3 border rounded-xl">
+                        <input type="url" x-model="modalForm.link" placeholder="Hyperlink (optional)" class="w-full p-3 border rounded-xl">
+                    </div>
+                </template>
+                <template x-if="modalType === 'result'">
+                    <div class="space-y-4">
+                        <input type="text" x-model="modalForm.student_id" placeholder="Admission ID" required class="w-full p-3 border rounded-xl">
+                        <input type="text" x-model="modalForm.student_name" placeholder="Full Name" required class="w-full p-3 border rounded-xl">
+                        <input type="date" x-model="modalForm.dob" required class="w-full p-3 border rounded-xl">
+                        <input type="text" x-model="modalForm.grade" placeholder="Overall Grade" required class="w-full p-3 border rounded-xl">
+                    </div>
+                </template>
+                <button class="w-full bg-primary text-white py-4 rounded-xl font-bold">Save Data</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div x-show="toast.show" x-cloak x-transition class="fixed bottom-8 right-8 z-[100] bg-gray-900 text-white px-8 py-3 rounded-full shadow-2xl flex items-center gap-3">
+        <i :class="toast.success ? 'fas fa-check-circle text-green-400' : 'fas fa-times-circle text-red-400'"></i>
+        <span x-text="toast.message"></span>
+    </div>
+
 </body>
 </html>
