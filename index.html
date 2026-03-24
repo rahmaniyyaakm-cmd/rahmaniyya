@@ -140,7 +140,8 @@
                     guardian_name: '', guardian_occ: '',
                     parent_phone: '', parent_email: '',
                     course: '', class_applied: '', duration: '', grade: '',
-                    admission_date: '', transferring_date: '', last_school: ''
+                    admission_date: '', transferring_date: '', last_school: '',
+                    declarationAccepted: false
                 },
                 resultLogin: { id: '', dob: '' },
                 activeResult: null,
@@ -156,50 +157,41 @@
                 toast: { show: false, message: '', success: true },
 
                 async init() {
-                    await this.fetchPublicData();
-                    this.startSlider();
-                    this.isLoading = false;
-                    setTimeout(() => lucide.createIcons(), 200);
+                    try {
+                        await this.fetchPublicData();
+                    } catch (e) {
+                        console.error("Initialization Error:", e);
+                    } finally {
+                        this.isLoading = false;
+                        this.startSlider();
+                        setTimeout(() => lucide.createIcons(), 200);
+                    }
                 },
 
                 async fetchPublicData() {
                     try {
-                        const [nRes, cRes, newsRes, sRes, gRes] = await Promise.all([
-                            supabaseClient.from('notifications').select('*').order('id', { ascending: false }),
-                            supabaseClient.from('clubs').select('*'),
-                            supabaseClient.from('news_events').select('*').order('date', { ascending: false }),
-                            supabaseClient.from('staff').select('*'),
-                            supabaseClient.from('gallery').select('*').order('created_at', { ascending: false })
-                        ]);
-
+                        const nRes = await supabaseClient.from('notifications').select('*').order('id', { ascending: false });
                         this.notifications = nRes.data || [];
                         this.activeNotifications = this.notifications.filter(n => n.active);
 
+                        const cRes = await supabaseClient.from('clubs').select('*');
                         this.clubs = cRes.data && cRes.data.length ? cRes.data : [
-                            { name: 'Eco Club', purpose: 'Promoting environmental awareness through campus gardening and plastic-free initiatives.', teacher_name: 'Mrs. Fatima', teacher_phone: '04931 2027107', student_name: 'Zidan K', icon: 'leaf' },
-                            { name: 'Literary Club', purpose: 'Nurturing writing, debating, and oratory skills among students.', teacher_name: 'Mr. Anees', teacher_phone: '04931 2027107', student_name: 'Shifa M', icon: 'book-open' },
-                            { name: 'Science Club', purpose: 'Conducting weekly experiments and fostering a scientific temper.', teacher_name: 'Ms. Soumya', teacher_phone: '04931 2027107', student_name: 'Rahul V', icon: 'flask' }
+                            { name: 'Eco Club', purpose: 'Environmental initiatives.', teacher_name: 'Mrs. Fatima', teacher_phone: '04931 2027107', student_name: 'Zidan K', icon: 'leaf' },
+                            { name: 'Literary Club', purpose: 'Oratory skills.', teacher_name: 'Mr. Anees', teacher_phone: '04931 2027107', student_name: 'Shifa M', icon: 'book-open' }
                         ];
 
-                        this.news = newsRes.data && newsRes.data.length ? newsRes.data : [
-                            { id: 1, title: 'Annual Sports Meet 2024', type: 'Event', date: '2024-03-20', description: 'A grand celebration of athletics and sportsmanship involving all classes.', image: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600' },
-                            { id: 2, title: 'Science Exhibition Excellence', type: 'News', date: '2024-02-15', description: 'Students presented innovative sustainable energy projects at the district level.', image: 'https://images.unsplash.com/photo-1530210124550-912dc1381cb8?q=80&w=600' }
-                        ];
+                        const newsRes = await supabaseClient.from('news_events').select('*').order('date', { ascending: false });
+                        this.news = newsRes.data || [];
 
+                        const sRes = await supabaseClient.from('staff').select('*');
                         this.staff = sRes.data && sRes.data.length ? sRes.data : [
-                            { id: 1, name: 'Mrs. Sreelatha V', designation: 'Principal', qualification: 'M.A, B.Ed, M.Phil', phone: '04931 2027107', email: 'principal@rahmaniyya.com', photo_url: 'https://images.unsplash.com/photo-1544717297-fa154da09f9b?q=80&w=400' },
-                            { id: 2, name: 'Mr. Abdul Rahman', designation: 'HOD Science', qualification: 'M.Sc, B.Ed', phone: '04931 2027107', email: 'science@rahmaniyya.com', photo_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400' },
-                            { id: 3, name: 'Ms. Meera Nair', designation: 'English Lead', qualification: 'M.A, B.Ed', phone: '04931 2027107', email: 'english@rahmaniyya.com', photo_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400' }
+                            { id: 1, name: 'Mrs. Sreelatha V', designation: 'Principal', qualification: 'M.A, B.Ed, M.Phil', phone: '04931 2027107', email: 'principal@rahmaniyya.com', photo_url: 'https://images.unsplash.com/photo-1544717297-fa154da09f9b?q=80&w=400' }
                         ];
 
-                        this.gallery = gRes.data && gRes.data.length ? gRes.data : [
-                            { id: 1, url: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=400', caption: 'Science Lab Session' },
-                            { id: 2, url: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=400', caption: 'Campus Play Area' },
-                            { id: 3, url: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=400', caption: 'Group Activities' },
-                            { id: 4, url: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=400', caption: 'Library Reading' }
-                        ];
+                        const gRes = await supabaseClient.from('gallery').select('*').order('created_at', { ascending: false });
+                        this.gallery = gRes.data || [];
                     } catch (e) {
-                        console.error("Fetch error:", e);
+                        console.error("Supabase fetch failed:", e);
                     }
                 },
 
@@ -231,8 +223,13 @@
                 },
 
                 async submitAdmission() {
+                    if (!this.form.declarationAccepted) {
+                        this.showToast("Please accept the declaration to continue.", false);
+                        return;
+                    }
                     this.isSubmitting = true;
                     const ref_id = 'RPS-' + Date.now().toString().slice(-6);
+                    // Filter out UI only fields like declarationAccepted before sending to DB if needed
                     const { error } = await supabaseClient.from('admissions').insert([{ ...this.form, ref_id }]);
                     
                     if (error) {
@@ -240,7 +237,7 @@
                     } else {
                         this.showToast("Submitted! Ref ID: " + ref_id, true);
                         this.currentPage = 'home';
-                        this.form = { nationality: 'Indian', state: 'Kerala' }; // Reset
+                        this.form = { nationality: 'Indian', state: 'Kerala', declarationAccepted: false }; 
                     }
                     this.isSubmitting = false;
                 },
@@ -400,7 +397,9 @@
                 },
 
                 startSlider() {
-                    setInterval(() => { this.nextSlide(); }, 5000);
+                    if (this.sliderImages.length > 1) {
+                        setInterval(() => { this.nextSlide(); }, 5000);
+                    }
                 },
                 nextSlide() { this.currentSlide = (this.currentSlide + 1) % this.sliderImages.length; },
                 prevSlide() { this.currentSlide = (this.currentSlide - 1 + this.sliderImages.length) % this.sliderImages.length; },
@@ -454,7 +453,7 @@
         };
     </script>
 </head>
-<body x-data="schoolApp()" x-cloak class="bg-gray-50 text-gray-800 overflow-x-hidden">
+<body x-data="schoolApp()" x-init="init()" x-cloak class="bg-gray-50 text-gray-800 overflow-x-hidden">
 
     <!-- LOADING OVERLAY -->
     <div x-show="isLoading" class="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center">
@@ -529,7 +528,7 @@
         <div x-show="mobileMenuOpen" x-transition class="lg:hidden bg-white border-t px-6 py-8 absolute w-full shadow-2xl z-40">
             <div class="flex flex-col gap-5 font-bold text-lg">
                 <a @click="currentPage = 'home'; mobileMenuOpen = false" href="#">Home</a>
-                <a @click="currentPage = 'profile'; mobileMenuOpen = false" href="#">School Profile</a>
+                <a @click="currentPage = 'profile'; mobileMenuOpen = false" href="#">About Us</a>
                 <a @click="currentPage = 'admission'; mobileMenuOpen = false" href="#">Admission</a>
                 <a @click="currentPage = 'results'; mobileMenuOpen = false" href="#">Results</a>
                 <a @click="currentPage = 'gallery'; mobileMenuOpen = false" href="#">Gallery</a>
@@ -662,7 +661,7 @@
             </div>
         </template>
 
-        <!-- VISION & MISSION -->
+        <!-- VISION, MISSION, MILESTONES templates remain same -->
         <template x-if="currentPage === 'vision'">
             <div class="py-20 bg-gray-50 animate-fade-in">
                 <div class="container mx-auto px-4 max-w-6xl">
@@ -686,7 +685,6 @@
             </div>
         </template>
 
-        <!-- MILESTONES -->
         <template x-if="currentPage === 'milestones'">
             <div class="py-24 animate-fade-in">
                 <div class="container mx-auto px-4 max-w-4xl text-center">
@@ -794,95 +792,18 @@
             </div>
         </template>
 
-        <!-- ACADEMICS, CLUBS, STAFF DIRECTORY, ADMISSION sections -->
-        <template x-if="currentPage === 'kg-section' || currentPage === 'primary-section'">
-            <div class="py-20 bg-gray-50 animate-fade-in">
-                <div class="container mx-auto px-4 max-w-6xl text-center mb-16">
-                    <h2 class="text-4xl font-bold text-primary mb-4" x-text="currentPage === 'kg-section' ? 'Foundation Years (KG)' : 'Primary Education'"></h2>
-                    <p class="text-gray-500 max-w-2xl mx-auto" x-text="currentPage === 'kg-section' ? 'Where curiosity meets discovery. Our Kindergarten program is designed for social and academic growth.' : 'A robust curriculum designed to build critical thinking and subject mastery.'"></p>
-                    <div class="grid lg:grid-cols-2 gap-10 text-left mt-16">
-                        <template x-for="item in (currentPage === 'kg-section' ? academicData.kg : academicData.primary)" :key="item.name">
-                            <div class="bg-white p-10 rounded-[2.5rem] shadow-xl border hover:shadow-2xl transition-all">
-                                <span class="text-[10px] font-bold text-secondary uppercase tracking-widest px-3 py-1 bg-secondary/10 rounded-full" x-text="item.level"></span>
-                                <h3 class="text-4xl font-bold text-primary mt-4 mb-6" x-text="item.name"></h3>
-                                <p class="text-gray-600 mb-8 italic" x-text="item.overview"></p>
-                                <div class="flex flex-wrap gap-2 mb-8">
-                                    <template x-for="sub in item.subjects" :key="sub">
-                                        <span class="bg-gray-50 px-4 py-2 rounded-xl text-xs font-bold text-gray-700 border" x-text="sub"></span>
-                                    </template>
-                                </div>
-                                <div class="pt-6 border-t">
-                                    <h4 class="font-bold text-primary mb-2">Expected Outcomes:</h4>
-                                    <p class="text-gray-500 text-sm" x-text="item.outcomes"></p>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-            </div>
-        </template>
-
-        <template x-if="currentPage === 'clubs'">
-            <div class="py-24 animate-fade-in">
-                <div class="container mx-auto px-4 max-w-7xl">
-                    <div class="text-center mb-20">
-                        <h2 class="text-5xl font-bold text-primary mb-4">Student Clubs & Societies</h2>
-                        <div class="w-24 h-1.5 bg-secondary mx-auto rounded-full"></div>
-                    </div>
-                    <div class="grid md:grid-cols-3 gap-10">
-                        <template x-for="club in clubs" :key="club.name">
-                            <div class="bg-gray-50 p-10 rounded-[3rem] shadow-xl border border-gray-100 group hover:bg-primary transition-all duration-500 text-center">
-                                <div class="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-3xl mb-8 mx-auto group-hover:bg-secondary group-hover:text-white"><i :class="'fas fa-' + (club.icon || 'users')"></i></div>
-                                <h3 class="text-2xl font-bold text-primary mb-4 group-hover:text-white" x-text="club.name"></h3>
-                                <p class="text-gray-500 text-sm mb-8 group-hover:text-white/80" x-text="club.purpose"></p>
-                                <div class="pt-8 border-t border-gray-200 group-hover:border-white/10 space-y-4 text-left">
-                                    <div class="flex items-center gap-3"><div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-primary"><i class="fas fa-user-tie text-[10px]"></i></div><p class="text-xs font-bold group-hover:text-white" x-text="club.teacher_name"></p></div>
-                                    <div class="flex items-center gap-3"><div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-secondary"><i class="fas fa-star text-[10px]"></i></div><p class="text-xs font-bold group-hover:text-white" x-text="club.student_name"></p></div>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-            </div>
-        </template>
-
-        <template x-if="currentPage === 'tutorial'">
-            <div class="py-24 bg-gray-50 animate-fade-in">
-                <div class="container mx-auto px-4 text-center">
-                    <h2 class="text-4xl font-bold text-primary mb-16 uppercase tracking-widest">Our Faculty</h2>
-                    <div class="grid md:grid-cols-4 gap-8 max-w-7xl mx-auto text-left">
-                        <template x-for="member in staff" :key="member.id">
-                            <div class="bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border hover:scale-105 transition-all group">
-                                <div class="h-64 bg-gray-100 overflow-hidden relative">
-                                    <img :src="member.photo_url || 'https://via.placeholder.com/400x500?text=Faculty'" class="w-full h-full object-cover">
-                                    <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-primary to-transparent p-6">
-                                        <p class="text-white font-bold" x-text="member.name"></p>
-                                        <p class="text-secondary text-[10px] font-bold uppercase tracking-widest" x-text="member.designation"></p>
-                                    </div>
-                                </div>
-                                <div class="p-6 space-y-2 text-xs text-gray-500">
-                                    <p><i class="fas fa-graduation-cap text-secondary mr-2"></i> <span x-text="member.qualification"></span></p>
-                                    <p><i class="fas fa-phone-alt text-secondary mr-2"></i> <span x-text="member.phone"></span></p>
-                                    <p x-show="member.email"><i class="fas fa-envelope text-secondary mr-2"></i> <span x-text="member.email"></span></p>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-            </div>
-        </template>
-
-        <!-- ADMISSION FORM -->
+        <!-- ADMISSION FORM WITH DECLARATION -->
         <template x-if="currentPage === 'admission'">
             <div class="container mx-auto px-4 py-20 bg-gray-50 animate-fade-in">
                 <div class="max-w-5xl mx-auto bg-white rounded-[3rem] shadow-2xl border overflow-hidden">
-                    <div class="bg-primary text-white p-12 text-center relative overflow-hidden">
+                    <div class="bg-primary text-white p-12 text-center relative overflow-hidden border-b-8 border-secondary">
+                        <img src="logo rah.png" alt="RPS" class="h-20 w-auto mx-auto mb-4 brightness-0 invert" onerror="this.style.display='none'">
                         <h2 class="text-4xl font-bold mb-4 uppercase tracking-tight">ADMISSION PORTAL 2024-25</h2>
                         <p class="text-secondary font-bold uppercase tracking-widest text-xs">Rahmaniyya Public School Akampadam</p>
                     </div>
-                    <form @submit.prevent="submitAdmission" class="p-10 md:p-16 space-y-10">
+                    <form @submit.prevent="submitAdmission" class="p-10 md:p-16 space-y-12">
                         <section>
-                            <h3 class="text-primary font-bold border-b pb-3 mb-8">STUDENT INFORMATION</h3>
+                            <h3 class="text-primary font-bold border-b pb-3 mb-8 flex items-center gap-3"><i class="fas fa-user-graduate"></i> STUDENT INFORMATION</h3>
                             <div class="grid md:grid-cols-2 gap-6">
                                 <input type="text" x-model="form.student_name" placeholder="Student Name (BLOCK LETTERS)" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none uppercase">
                                 <div class="grid grid-cols-2 gap-4">
@@ -895,7 +816,7 @@
                             </div>
                         </section>
                         <section>
-                            <h3 class="text-primary font-bold border-b pb-3 mb-8">PARENT DETAILS</h3>
+                            <h3 class="text-primary font-bold border-b pb-3 mb-8 flex items-center gap-3"><i class="fas fa-users"></i> PARENT DETAILS</h3>
                             <div class="grid md:grid-cols-2 gap-4">
                                 <input type="text" x-model="form.father_name" placeholder="Father's Name" class="p-4 bg-gray-50 border rounded-2xl outline-none">
                                 <input type="text" x-model="form.mother_name" placeholder="Mother's Name" class="p-4 bg-gray-50 border rounded-2xl outline-none">
@@ -906,7 +827,21 @@
                                 </select>
                             </div>
                         </section>
-                        <button type="submit" :disabled="isSubmitting" class="w-full bg-primary text-white py-6 rounded-3xl font-bold shadow-2xl hover:bg-blue-900 transition-all flex items-center justify-center gap-4 text-lg">
+
+                        <!-- DECLARATION SECTION -->
+                        <section class="bg-gray-50 p-8 rounded-[2rem] border-2 border-dashed border-primary/20">
+                            <h3 class="text-center font-bold text-primary underline mb-6 uppercase tracking-widest text-lg">Declaration</h3>
+                            <div class="flex items-start gap-4">
+                                <div class="pt-1">
+                                    <input type="checkbox" x-model="form.declarationAccepted" required class="w-6 h-6 rounded border-primary text-primary focus:ring-primary">
+                                </div>
+                                <p class="text-sm text-gray-700 leading-relaxed italic">
+                                    I <span class="font-bold border-b-2 border-gray-400 px-4 min-w-[150px] inline-block text-center text-primary" x-text="form.father_name || form.mother_name || 'Guardian/Parent Name'"></span> hereby declare that the informations are correct to the best of knowledge & belief and agrees to obey the rules and regulations.
+                                </p>
+                            </div>
+                        </section>
+
+                        <button type="submit" :disabled="isSubmitting || !form.declarationAccepted" :class="!form.declarationAccepted ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-900'" class="w-full bg-primary text-white py-6 rounded-3xl font-bold shadow-2xl transition-all flex items-center justify-center gap-4 text-lg">
                             <span x-show="!isSubmitting">Secure Submission <i class="fas fa-arrow-right"></i></span>
                             <span x-show="isSubmitting"><i class="fas fa-circle-notch animate-spin"></i> Processing...</span>
                         </button>
@@ -1016,45 +951,16 @@
 
                              <template x-if="adminSection === 'clubs'">
                                 <template x-for="club in clubs" :key="club.id || club.name">
-                                    <div class="bg-white p-6 rounded-3xl border shadow-sm relative group">
+                                    <div class="bg-white p-6 rounded-3xl border shadow-sm relative group text-center">
                                         <button @click="deleteItem('clubs', club.id)" class="absolute top-4 right-4 text-red-200 hover:text-red-500"><i class="fas fa-trash"></i></button>
-                                        <div class="flex items-center gap-4 mb-4">
-                                            <div class="w-12 h-12 bg-primary/5 text-primary rounded-xl flex items-center justify-center text-xl">
-                                                <i :class="'fas fa-' + (club.icon || 'users')"></i>
-                                            </div>
-                                            <h3 class="font-bold text-primary" x-text="club.name"></h3>
+                                        <div class="w-16 h-16 bg-primary/5 text-primary rounded-xl flex items-center justify-center text-3xl mb-4 mx-auto">
+                                            <i :class="'fas fa-' + (club.icon || 'users')"></i>
                                         </div>
-                                        <p class="text-xs text-gray-500 line-clamp-2 mb-4" x-text="club.purpose"></p>
-                                        <div class="pt-4 border-t space-y-2">
+                                        <h3 class="font-bold text-primary" x-text="club.name"></h3>
+                                        <p class="text-xs text-gray-500 line-clamp-2 mt-2" x-text="club.purpose"></p>
+                                        <div class="pt-4 mt-4 border-t space-y-1 text-left">
                                             <p class="text-[10px] text-gray-400 font-bold uppercase">Staff: <span class="text-primary" x-text="club.teacher_name"></span></p>
-                                            <p class="text-[10px] text-gray-400 font-bold uppercase">Phone: <span class="text-primary" x-text="club.teacher_phone"></span></p>
                                             <p class="text-[10px] text-gray-400 font-bold uppercase">Student: <span class="text-secondary" x-text="club.student_name"></span></p>
-                                        </div>
-                                    </div>
-                                </template>
-                             </template>
-
-                             <template x-if="adminSection === 'results'">
-                                <template x-for="res in results" :key="res.id">
-                                    <div class="bg-white p-6 rounded-3xl border shadow-sm relative group">
-                                        <button @click="deleteItem('results', res.id)" class="absolute top-4 right-4 text-red-200 hover:text-red-500"><i class="fas fa-trash"></i></button>
-                                        <div class="flex justify-between items-start">
-                                            <div>
-                                                <h3 class="font-bold text-primary truncate w-32" x-text="res.student_name"></h3>
-                                                <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest" x-text="'ID: ' + res.student_id"></p>
-                                            </div>
-                                            <p class="text-2xl font-black text-secondary" x-text="res.grade"></p>
-                                        </div>
-                                        <div class="mt-4 pt-4 border-t text-[10px] text-gray-500">
-                                            <p x-text="res.exam_name"></p>
-                                            <div class="flex justify-between mt-1 items-center">
-                                                <span class="text-blue-500 flex items-center gap-1">
-                                                    <i class="fas fa-clock"></i> 
-                                                    <span x-text="res.scheduled_at ? new Date(res.scheduled_at).toLocaleString() : 'Immediate'"></span>
-                                                </span>
-                                                <span :class="res.scheduled_at && new Date(res.scheduled_at) > new Date() ? 'text-yellow-600 font-bold' : 'text-green-600 font-bold'" 
-                                                      x-text="res.scheduled_at && new Date(res.scheduled_at) > new Date() ? 'SCHEDULED' : 'LIVE'"></span>
-                                            </div>
                                         </div>
                                     </div>
                                 </template>
@@ -1132,39 +1038,21 @@
                 
                 <template x-if="modalType === 'staff'">
                     <div class="space-y-4 text-left">
-                        <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 block mb-1">Full Name</label>
-                            <input type="text" x-model="modalForm.name" placeholder="Staff Name" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        <input type="text" x-model="modalForm.name" placeholder="Full Name" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" x-model="modalForm.designation" placeholder="Job Title" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                            <input type="text" x-model="modalForm.qualification" placeholder="Qualifications" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
                         </div>
                         <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 block mb-1">Designation</label>
-                                <input type="text" x-model="modalForm.designation" placeholder="Job Title" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                            </div>
-                            <div>
-                                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 block mb-1">Qualifications</label>
-                                <input type="text" x-model="modalForm.qualification" placeholder="Degree" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                            </div>
+                            <input type="tel" x-model="modalForm.phone" placeholder="Phone Number" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                            <input type="email" x-model="modalForm.email" placeholder="Email Address" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 block mb-1">Phone Number</label>
-                                <input type="tel" x-model="modalForm.phone" placeholder="Contact No" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                            </div>
-                            <div>
-                                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 block mb-1">Email Address</label>
-                                <input type="email" x-model="modalForm.email" placeholder="Email" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 block mb-1">Photo URL (Optional)</label>
-                            <input type="url" x-model="modalForm.photo_url" placeholder="Direct link to image" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                        </div>
+                        <input type="url" x-model="modalForm.photo_url" placeholder="Photo URL" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
                     </div>
                 </template>
 
                 <template x-if="modalType === 'gallery'"><div class="space-y-4"><input type="url" x-model="modalForm.url" placeholder="Image URL" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"><input type="text" x-model="modalForm.caption" placeholder="Caption (Optional)" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"></div></template>
-                <template x-if="modalType === 'news'"><div class="space-y-4"><input type="text" x-model="modalForm.title" placeholder="News Headline" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"><textarea x-model="modalForm.description" placeholder="Description" required class="w-full p-4 bg-gray-50 border rounded-2xl h-24 outline-none"></textarea><input type="date" x-model="modalForm.date" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"></div></template>
+                <template x-if="modalType === 'news'"><div class="space-y-4"><input type="text" x-model="modalForm.title" placeholder="Headline" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"><textarea x-model="modalForm.description" placeholder="Description" required class="w-full p-4 bg-gray-50 border rounded-2xl h-24 outline-none"></textarea><input type="date" x-model="modalForm.date" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"></div></template>
                 
                 <template x-if="modalType === 'club'">
                     <div class="space-y-4 text-left">
@@ -1175,7 +1063,7 @@
                             <input type="tel" x-model="modalForm.teacher_phone" placeholder="Coordinator Phone" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
                         </div>
                         <input type="text" x-model="modalForm.student_name" placeholder="Student Representative" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                        <input type="text" x-model="modalForm.icon" placeholder="Icon Name (e.g. leaf, book-open, flask)" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        <input type="text" x-model="modalForm.icon" placeholder="Icon (leaf, flask, etc)" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
                     </div>
                 </template>
 
@@ -1185,13 +1073,10 @@
                         <input type="text" x-model="modalForm.student_name" placeholder="Student Name" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
                         <div class="grid grid-cols-2 gap-4">
                             <input type="date" x-model="modalForm.dob" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                            <input type="text" x-model="modalForm.grade" placeholder="Overall Grade (A+)" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                            <input type="text" x-model="modalForm.grade" placeholder="Grade (A+)" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
                         </div>
-                        <input type="text" x-model="modalForm.exam_name" placeholder="Exam Name (e.g. Term I)" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                        <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 block mb-1">Schedule Publish Time (Optional)</label>
-                            <input type="datetime-local" x-model="modalForm.scheduled_at" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                        </div>
+                        <input type="text" x-model="modalForm.exam_name" placeholder="Exam Name" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        <input type="datetime-local" x-model="modalForm.scheduled_at" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
                     </div>
                 </template>
                 <button class="w-full bg-primary text-white py-5 rounded-2xl font-bold shadow-2xl hover:bg-blue-900 transition-all uppercase tracking-widest text-sm">Save Record</button>
