@@ -75,7 +75,7 @@
 
     <script>
         const SUPABASE_URL = "https://prgefwohjmurxigkgild.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByZ2Vmd29oam11cnhpZ2tnaWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMzMyMjQsImV4cCI6MjA4OTkwOTIyNH0.YF4tyjjBkP4lX8xKJZ68xFqUEQU9P_HKtBnKnlGNLTw";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOi|zdXBhYmFzZSIsInJlZiI6InByZ2Vmd29oam11cnhpZ2tnaWxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMzMyMjQsImV4cCI6MjA4OTkwOTIyNH0.YF4tyjjBkP4lX8xKJZ68xFqUEQU9P_HKtBnKnlGNLTw";
         
         window.tailwind.config = {
             theme: {
@@ -176,20 +176,31 @@
 
                         const cRes = await supabaseClient.from('clubs').select('*');
                         this.clubs = cRes.data && cRes.data.length ? cRes.data : [
-                            { name: 'Eco Club', purpose: 'Environmental initiatives.', teacher_name: 'Mrs. Fatima', teacher_phone: '04931 2027107', student_name: 'Zidan K', icon: 'leaf' },
-                            { name: 'Literary Club', purpose: 'Oratory skills.', teacher_name: 'Mr. Anees', teacher_phone: '04931 2027107', student_name: 'Shifa M', icon: 'book-open' }
+                            { name: 'Eco Club', purpose: 'Promoting environmental awareness through campus gardening and plastic-free initiatives.', teacher_name: 'Mrs. Fatima', teacher_phone: '04931 2027107', student_name: 'Zidan K', icon: 'leaf' },
+                            { name: 'Literary Club', purpose: 'Nurturing writing, debating, and oratory skills among students through creative competitions.', teacher_name: 'Mr. Anees', teacher_phone: '04931 2027107', student_name: 'Shifa M', icon: 'book-open' },
+                            { name: 'Science Club', purpose: 'Conducting weekly experiments and fostering a scientific temper through inquiry-based learning.', teacher_name: 'Ms. Soumya', teacher_phone: '04931 2027107', student_name: 'Rahul V', icon: 'flask' }
                         ];
 
                         const newsRes = await supabaseClient.from('news_events').select('*').order('date', { ascending: false });
-                        this.news = newsRes.data || [];
+                        this.news = newsRes.data && newsRes.data.length ? newsRes.data : [
+                            { id: 1, title: 'Annual Sports Meet 2024', type: 'Event', date: '2024-03-20', description: 'A grand celebration of athletics and sportsmanship involving all classes in the regional stadium.', image: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600' },
+                            { id: 2, title: 'Science Exhibition Excellence', type: 'News', date: '2024-02-15', description: 'Students presented innovative sustainable energy projects at the district level science fair.', image: 'https://images.unsplash.com/photo-1530210124550-912dc1381cb8?q=80&w=600' }
+                        ];
 
                         const sRes = await supabaseClient.from('staff').select('*');
                         this.staff = sRes.data && sRes.data.length ? sRes.data : [
-                            { id: 1, name: 'Mrs. Sreelatha V', designation: 'Principal', qualification: 'M.A, B.Ed, M.Phil', phone: '04931 2027107', email: 'principal@rahmaniyya.com', photo_url: 'https://images.unsplash.com/photo-1544717297-fa154da09f9b?q=80&w=400' }
+                            { id: 1, name: 'Mrs. Sreelatha V', designation: 'Principal', qualification: 'M.A, B.Ed, M.Phil', phone: '04931 2027107', email: 'principal@rahmaniyya.com', photo_url: 'https://images.unsplash.com/photo-1544717297-fa154da09f9b?q=80&w=400' },
+                            { id: 2, name: 'Mr. Abdul Rahman', designation: 'HOD Science', qualification: 'M.Sc, B.Ed', phone: '04931 2027107', email: 'science@rahmaniyya.com', photo_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400' },
+                            { id: 3, name: 'Ms. Meera Nair', designation: 'English Lead', qualification: 'M.A, B.Ed', phone: '04931 2027107', email: 'english@rahmaniyya.com', photo_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400' }
                         ];
 
                         const gRes = await supabaseClient.from('gallery').select('*').order('created_at', { ascending: false });
-                        this.gallery = gRes.data || [];
+                        this.gallery = gRes.data && gRes.data.length ? gRes.data : [
+                            { id: 1, url: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=400', caption: 'Science Lab Session' },
+                            { id: 2, url: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=400', caption: 'Campus Play Area' },
+                            { id: 3, url: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=400', caption: 'Group Activities' },
+                            { id: 4, url: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=400', caption: 'Library Reading' }
+                        ];
                     } catch (e) {
                         console.error("Supabase fetch failed:", e);
                     }
@@ -229,7 +240,6 @@
                     }
                     this.isSubmitting = true;
                     const ref_id = 'RPS-' + Date.now().toString().slice(-6);
-                    // Filter out UI only fields like declarationAccepted before sending to DB if needed
                     const { error } = await supabaseClient.from('admissions').insert([{ ...this.form, ref_id }]);
                     
                     if (error) {
@@ -661,7 +671,7 @@
             </div>
         </template>
 
-        <!-- VISION, MISSION, MILESTONES templates remain same -->
+        <!-- VISION & MISSION, MILESTONES -->
         <template x-if="currentPage === 'vision'">
             <div class="py-20 bg-gray-50 animate-fade-in">
                 <div class="container mx-auto px-4 max-w-6xl">
@@ -706,7 +716,7 @@
             </div>
         </template>
 
-        <!-- RESULTS PORTAL -->
+        <!-- RESULTS PORTAL WITH COUNTDOWN logic preserved -->
         <template x-if="currentPage === 'results'">
             <div class="container mx-auto px-4 py-20 flex justify-center animate-fade-in">
                 <div class="w-full max-w-2xl bg-white p-8 md:p-12 rounded-[2.5rem] shadow-2xl border text-center">
@@ -741,7 +751,6 @@
                                 <div class="text-4xl md:text-6xl font-black text-secondary">:</div>
                                 <div class="text-center"><p class="text-4xl md:text-6xl font-black text-white" x-text="countdown.s"></p><p class="text-[10px] text-gray-400 uppercase font-bold">Secs</p></div>
                             </div>
-                            <p class="mt-8 text-sm text-gray-400 font-light italic">Your results are staging. Access will be granted automatically when the timer reaches zero.</p>
                         </div>
                         <button @click="isCountdownActive = false" class="text-primary font-bold hover:underline flex items-center justify-center gap-2 mx-auto"><i class="fas fa-arrow-left"></i> Return to Search</button>
                     </div>
@@ -758,7 +767,6 @@
                                     <p class="text-6xl font-black text-secondary" x-text="activeResult?.grade"></p>
                                 </div>
                             </div>
-                            
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
                                 <div class="bg-white p-4 rounded-2xl shadow-sm border"><p class="text-[9px] font-bold text-gray-400 uppercase">Exam</p><p class="text-xs font-bold text-primary" x-text="activeResult?.exam_name"></p></div>
                                 <div class="bg-white p-4 rounded-2xl shadow-sm border"><p class="text-[9px] font-bold text-gray-400 uppercase">Marks</p><p class="text-xs font-bold text-primary" x-text="(activeResult?.awarded_mark || 0) + ' / ' + (activeResult?.max_mark || 100)"></p></div>
@@ -792,7 +800,87 @@
             </div>
         </template>
 
-        <!-- ADMISSION FORM WITH DECLARATION -->
+        <!-- ACADEMICS -->
+        <template x-if="currentPage === 'kg-section' || currentPage === 'primary-section'">
+            <div class="py-20 bg-gray-50 animate-fade-in">
+                <div class="container mx-auto px-4 max-w-6xl text-center mb-16">
+                    <h2 class="text-4xl font-bold text-primary mb-4" x-text="currentPage === 'kg-section' ? 'Foundation Years (KG)' : 'Primary Education'"></h2>
+                    <p class="text-gray-500 max-w-2xl mx-auto" x-text="currentPage === 'kg-section' ? 'Where curiosity meets discovery. Our Kindergarten program is designed for social and academic growth.' : 'A robust curriculum designed to build critical thinking and subject mastery.'"></p>
+                    <div class="grid lg:grid-cols-2 gap-10 text-left mt-16">
+                        <template x-for="item in (currentPage === 'kg-section' ? academicData.kg : academicData.primary)" :key="item.name">
+                            <div class="bg-white p-10 rounded-[2.5rem] shadow-xl border hover:shadow-2xl transition-all">
+                                <span class="text-[10px] font-bold text-secondary uppercase tracking-widest px-3 py-1 bg-secondary/10 rounded-full" x-text="item.level"></span>
+                                <h3 class="text-4xl font-bold text-primary mt-4 mb-6" x-text="item.name"></h3>
+                                <p class="text-gray-600 mb-8 italic" x-text="item.overview"></p>
+                                <div class="flex flex-wrap gap-2 mb-8">
+                                    <template x-for="sub in item.subjects" :key="sub">
+                                        <span class="bg-gray-50 px-4 py-2 rounded-xl text-xs font-bold text-gray-700 border" x-text="sub"></span>
+                                    </template>
+                                </div>
+                                <div class="pt-6 border-t">
+                                    <h4 class="font-bold text-primary mb-2">Expected Outcomes:</h4>
+                                    <p class="text-gray-500 text-sm" x-text="item.outcomes"></p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- CLUBS -->
+        <template x-if="currentPage === 'clubs'">
+            <div class="py-24 animate-fade-in">
+                <div class="container mx-auto px-4 max-w-7xl">
+                    <div class="text-center mb-20">
+                        <h2 class="text-5xl font-bold text-primary mb-4">Student Clubs & Societies</h2>
+                        <div class="w-24 h-1.5 bg-secondary mx-auto rounded-full"></div>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-10">
+                        <template x-for="club in clubs" :key="club.name">
+                            <div class="bg-gray-50 p-10 rounded-[3rem] shadow-xl border border-gray-100 group hover:bg-primary transition-all duration-500 text-center">
+                                <div class="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center text-3xl mb-8 mx-auto group-hover:bg-secondary group-hover:text-white"><i :class="'fas fa-' + (club.icon || 'users')"></i></div>
+                                <h3 class="text-2xl font-bold text-primary mb-4 group-hover:text-white" x-text="club.name"></h3>
+                                <p class="text-gray-500 text-sm mb-8 group-hover:text-white/80" x-text="club.purpose"></p>
+                                <div class="pt-8 border-t border-gray-200 group-hover:border-white/10 space-y-4 text-left">
+                                    <div class="flex items-center gap-3"><div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-primary"><i class="fas fa-user-tie text-[10px]"></i></div><p class="text-xs font-bold group-hover:text-white" x-text="club.teacher_name"></p></div>
+                                    <div class="flex items-center gap-3"><div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-secondary"><i class="fas fa-star text-[10px]"></i></div><p class="text-xs font-bold group-hover:text-white" x-text="club.student_name"></p></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- STAFF DIRECTORY -->
+        <template x-if="currentPage === 'tutorial'">
+            <div class="py-24 bg-gray-50 animate-fade-in">
+                <div class="container mx-auto px-4 text-center">
+                    <h2 class="text-4xl font-bold text-primary mb-16 uppercase tracking-widest">Our Faculty</h2>
+                    <div class="grid md:grid-cols-4 gap-8 max-w-7xl mx-auto text-left">
+                        <template x-for="member in staff" :key="member.id">
+                            <div class="bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border hover:scale-105 transition-all group">
+                                <div class="h-64 bg-gray-100 overflow-hidden relative">
+                                    <img :src="member.photo_url || 'https://via.placeholder.com/400x500?text=Faculty'" class="w-full h-full object-cover">
+                                    <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-primary to-transparent p-6">
+                                        <p class="text-white font-bold" x-text="member.name"></p>
+                                        <p class="text-secondary text-[10px] font-bold uppercase tracking-widest" x-text="member.designation"></p>
+                                    </div>
+                                </div>
+                                <div class="p-6 space-y-2 text-xs text-gray-500">
+                                    <p><i class="fas fa-graduation-cap text-secondary mr-2"></i> <span x-text="member.qualification"></span></p>
+                                    <p><i class="fas fa-phone-alt text-secondary mr-2"></i> <span x-text="member.phone"></span></p>
+                                    <p x-show="member.email"><i class="fas fa-envelope text-secondary mr-2"></i> <span x-text="member.email"></span></p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- ADMISSION FORM WITH DECLARATION logic preserved -->
         <template x-if="currentPage === 'admission'">
             <div class="container mx-auto px-4 py-20 bg-gray-50 animate-fade-in">
                 <div class="max-w-5xl mx-auto bg-white rounded-[3rem] shadow-2xl border overflow-hidden">
@@ -827,8 +915,6 @@
                                 </select>
                             </div>
                         </section>
-
-                        <!-- DECLARATION SECTION -->
                         <section class="bg-gray-50 p-8 rounded-[2rem] border-2 border-dashed border-primary/20">
                             <h3 class="text-center font-bold text-primary underline mb-6 uppercase tracking-widest text-lg">Declaration</h3>
                             <div class="flex items-start gap-4">
@@ -840,7 +926,6 @@
                                 </p>
                             </div>
                         </section>
-
                         <button type="submit" :disabled="isSubmitting || !form.declarationAccepted" :class="!form.declarationAccepted ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-900'" class="w-full bg-primary text-white py-6 rounded-3xl font-bold shadow-2xl transition-all flex items-center justify-center gap-4 text-lg">
                             <span x-show="!isSubmitting">Secure Submission <i class="fas fa-arrow-right"></i></span>
                             <span x-show="isSubmitting"><i class="fas fa-circle-notch animate-spin"></i> Processing...</span>
@@ -936,12 +1021,12 @@
                         <div x-show="['staff', 'gallery', 'clubs', 'results', 'news'].includes(adminSection)" class="grid md:grid-cols-3 gap-6">
                              <template x-if="adminSection === 'staff'">
                                 <template x-for="member in staff" :key="member.id">
-                                    <div class="bg-white p-8 rounded-3xl border shadow-sm relative group">
+                                    <div class="bg-white p-8 rounded-3xl border shadow-sm relative group text-center">
                                         <button @click="deleteItem('staff', member.id)" class="absolute top-4 right-4 text-red-300 hover:text-red-500"><i class="fas fa-times-circle"></i></button>
                                         <div class="w-20 h-20 bg-gray-100 rounded-full mx-auto mb-4 overflow-hidden flex items-center justify-center text-primary text-2xl border-2 border-secondary"><img :src="member.photo_url" class="w-full h-full object-cover" onerror="this.style.display='none'"><i class="fas fa-user-tie"></i></div>
-                                        <h3 class="font-bold text-center text-primary" x-text="member.name"></h3>
-                                        <p class="text-xs text-center text-gray-400" x-text="member.designation"></p>
-                                        <div class="mt-4 pt-4 border-t text-[10px] text-gray-500 space-y-1">
+                                        <h3 class="font-bold text-primary" x-text="member.name"></h3>
+                                        <p class="text-xs text-gray-400" x-text="member.designation"></p>
+                                        <div class="mt-4 pt-4 border-t text-[10px] text-gray-500 space-y-1 text-left">
                                             <p x-show="member.phone"><i class="fas fa-phone mr-1"></i> <span x-text="member.phone"></span></p>
                                             <p x-show="member.email"><i class="fas fa-envelope mr-1"></i> <span x-text="member.email"></span></p>
                                         </div>
