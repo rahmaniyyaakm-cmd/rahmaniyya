@@ -138,25 +138,16 @@
                         this.activeNotifications = this.notifications.filter(n => n.active);
 
                         const { data: cData } = await supabaseClient.from('clubs').select('*');
-                        this.clubs = cData || [
-                            { id: 1, name: 'Eco Club', purpose: 'Promoting environmental awareness', teacher_name: 'Mrs. Fatima', teacher_phone: '9847123456', student_name: 'Rahid K' },
-                            { id: 2, name: 'Literary Club', purpose: 'Developing language and oration skills', teacher_name: 'Mr. Anees', teacher_phone: '9847654321', student_name: 'Shifa M' }
-                        ];
+                        this.clubs = cData || [];
 
                         const { data: newsData } = await supabaseClient.from('news_events').select('*').order('date', { ascending: false });
-                        this.news = newsData || [
-                            { id: 1, title: 'Annual Sports Meet 2024', type: 'Event', date: '2024-03-20', description: 'A day filled with athletics and sportsmanship.', image: null }
-                        ];
+                        this.news = newsData || [];
 
                         const { data: staffData } = await supabaseClient.from('staff').select('*');
-                        this.staff = staffData || [
-                            { id: 1, name: 'School Staff Member', designation: 'Faculty', qualification: 'B.Ed / M.Ed', phone: '04931 2027107' }
-                        ];
+                        this.staff = staffData || [];
 
                         const { data: gallData } = await supabaseClient.from('gallery').select('*').order('created_at', { ascending: false });
-                        this.gallery = gallData || [
-                            { id: 1, url: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80&w=400', caption: 'Academic Activity' }
-                        ];
+                        this.gallery = gallData || [];
                     } catch (e) {
                         console.error("Supabase data fetch error:", e);
                     }
@@ -218,25 +209,47 @@
                     }
                 },
 
-                showModal(type) {
-                    this.modalType = type;
+                showModal(section) {
+                    // Map sections to modal types
+                    const typeMap = {
+                        'notifications': 'notification',
+                        'staff': 'staff',
+                        'results': 'result',
+                        'news': 'news'
+                    };
+                    this.modalType = typeMap[section] || section;
                     this.modalForm = {};
                     this.modalOpen = true;
                 },
 
                 async handleModalSubmit() {
-                    const table = this.modalType === 'notification' ? 'notifications' : 
-                                  this.modalType === 'staff' ? 'staff' : 'results';
+                    const tableMap = {
+                        'notification': 'notifications',
+                        'staff': 'staff',
+                        'result': 'results',
+                        'news': 'news_events'
+                    };
+                    
+                    const table = tableMap[this.modalType];
+                    if (!table) {
+                        this.showToast("Invalid modal type", false);
+                        return;
+                    }
+
                     const payload = { ...this.modalForm };
                     if (this.modalType === 'notification') payload.active = true;
                     if (this.modalType === 'result') payload.published = false;
 
                     const { error } = await supabaseClient.from(table).insert([payload]);
-                    if (!error) {
+                    
+                    if (error) {
+                        this.showToast("Save Error: " + error.message, false);
+                    } else {
                         this.modalOpen = false;
-                        this.fetchPublicData();
-                        this.fetchAdminData();
-                        this.showToast("Record Saved!", true);
+                        this.modalForm = {};
+                        await this.fetchPublicData();
+                        await this.fetchAdminData();
+                        this.showToast("Record Saved Successfully!", true);
                     }
                 },
 
@@ -406,6 +419,23 @@
                         <p class="text-gray-600">Embracing modern learning tools and facilities for future readiness.</p>
                     </div>
                 </section>
+                
+                <!-- Latest News Preview -->
+                <section class="py-16 bg-white" x-show="news.length > 0">
+                    <div class="container mx-auto px-4">
+                        <h2 class="text-3xl font-bold text-primary mb-8 text-center">Latest Updates</h2>
+                        <div class="grid md:grid-cols-3 gap-8">
+                            <template x-for="item in news.slice(0, 3)" :key="item.id">
+                                <div class="bg-gray-50 p-6 rounded-2xl border">
+                                    <span class="text-xs font-bold text-secondary uppercase" x-text="item.type"></span>
+                                    <h3 class="font-bold text-lg mt-2 mb-3" x-text="item.title"></h3>
+                                    <p class="text-gray-600 text-sm mb-4" x-text="item.description"></p>
+                                    <p class="text-xs text-gray-400" x-text="formatDate(item.date)"></p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </section>
             </div>
         </template>
 
@@ -516,64 +546,125 @@
 
         <!-- ADMIN DASHBOARD -->
         <template x-if="currentPage === 'admin-dashboard'">
-            <div class="flex h-screen bg-gray-100">
-                <div class="w-64 bg-primary text-white p-6 flex flex-col justify-between">
+            <div class="flex h-screen bg-gray-100 overflow-hidden">
+                <div class="w-64 bg-primary text-white p-6 flex flex-col justify-between flex-shrink-0">
                     <div>
-                        <h3 class="font-bold text-xl mb-10 text-secondary">RPS ADMIN</h3>
-                        <nav class="space-y-2">
-                            <button @click="adminSection = 'notifications'" :class="adminSection === 'notifications' ? 'bg-white/20' : ''" class="w-full text-left p-3 rounded-xl hover:bg-white/10 transition-colors">Notifications</button>
-                            <button @click="adminSection = 'admissions'" :class="adminSection === 'admissions' ? 'bg-white/20' : ''" class="w-full text-left p-3 rounded-xl hover:bg-white/10 transition-colors">Admissions</button>
-                            <button @click="adminSection = 'results'" :class="adminSection === 'results' ? 'bg-white/20' : ''" class="w-full text-left p-3 rounded-xl hover:bg-white/10 transition-colors">Results</button>
+                        <h3 class="font-bold text-xl mb-10 text-secondary tracking-widest">RPS ADMIN</h3>
+                        <nav class="space-y-1">
+                            <button @click="adminSection = 'notifications'" :class="adminSection === 'notifications' ? 'bg-white/20' : ''" class="w-full text-left p-3 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-3">
+                                <i class="fas fa-bullhorn w-5"></i> Notifications
+                            </button>
+                            <button @click="adminSection = 'admissions'" :class="adminSection === 'admissions' ? 'bg-white/20' : ''" class="w-full text-left p-3 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-3">
+                                <i class="fas fa-file-invoice w-5"></i> Admissions
+                            </button>
+                            <button @click="adminSection = 'results'" :class="adminSection === 'results' ? 'bg-white/20' : ''" class="w-full text-left p-3 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-3">
+                                <i class="fas fa-award w-5"></i> Results
+                            </button>
+                            <button @click="adminSection = 'news'" :class="adminSection === 'news' ? 'bg-white/20' : ''" class="w-full text-left p-3 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-3">
+                                <i class="fas fa-newspaper w-5"></i> News & Events
+                            </button>
+                            <button @click="adminSection = 'staff'" :class="adminSection === 'staff' ? 'bg-white/20' : ''" class="w-full text-left p-3 rounded-xl hover:bg-white/10 transition-colors flex items-center gap-3">
+                                <i class="fas fa-user-tie w-5"></i> Staff
+                            </button>
                         </nav>
                     </div>
-                    <button @click="logout()" class="bg-red-500 text-white py-3 rounded-xl font-bold">Logout</button>
+                    <button @click="logout()" class="bg-red-500 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </button>
                 </div>
+                
                 <div class="flex-1 p-10 overflow-y-auto">
                     <header class="flex justify-between items-center mb-10">
                         <h2 class="text-3xl font-bold text-primary uppercase" x-text="adminSection"></h2>
-                        <button @click="showModal(adminSection === 'notifications' ? 'notification' : 'result')" x-show="adminSection !== 'admissions'" class="bg-secondary text-white px-6 py-2 rounded-xl font-bold">+ New Entry</button>
+                        <button @click="showModal(adminSection)" x-show="adminSection !== 'admissions'" class="bg-secondary text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-yellow-600 transition-colors">
+                            <i class="fas fa-plus mr-2"></i> New Entry
+                        </button>
                     </header>
 
+                    <!-- Notifications Manager -->
                     <div x-show="adminSection === 'notifications'" class="space-y-4">
                         <template x-for="note in notifications" :key="note.id">
-                            <div class="bg-white p-5 rounded-2xl flex justify-between items-center shadow-sm">
+                            <div class="bg-white p-5 rounded-2xl flex justify-between items-center shadow-sm border">
                                 <div>
-                                    <p class="font-bold" x-text="note.text"></p>
-                                    <p class="text-xs text-gray-400" x-text="note.link || 'No link'"></p>
+                                    <p class="font-bold text-primary" x-text="note.text"></p>
+                                    <p class="text-xs text-gray-400" x-text="note.link || 'No link attached'"></p>
                                 </div>
-                                <div class="flex gap-4">
-                                    <button @click="toggleNotificationStatus(note)" :class="note.active ? 'text-green-500' : 'text-gray-300'"><i class="fas fa-power-off text-xl"></i></button>
-                                    <button @click="deleteItem('notifications', note.id)" class="text-red-500"><i class="fas fa-trash"></i></button>
+                                <div class="flex gap-4 items-center">
+                                    <button @click="toggleNotificationStatus(note)" :class="note.active ? 'text-green-500' : 'text-gray-300'" title="Toggle Active Status">
+                                        <i class="fas fa-power-off text-xl"></i>
+                                    </button>
+                                    <button @click="deleteItem('notifications', note.id)" class="text-red-400 hover:text-red-600">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </div>
                             </div>
                         </template>
                     </div>
 
+                    <!-- Admissions Manager -->
                     <div x-show="adminSection === 'admissions'">
                         <div class="bg-white rounded-2xl shadow-sm overflow-hidden border">
-                            <table class="w-full text-left">
+                            <table class="w-full text-left border-collapse">
                                 <thead class="bg-gray-50 border-b">
                                     <tr>
-                                        <th class="p-4">Ref ID</th>
-                                        <th class="p-4">Student</th>
-                                        <th class="p-4">Parent</th>
-                                        <th class="p-4 text-right">Action</th>
+                                        <th class="p-4 font-bold text-sm text-gray-500">REF ID</th>
+                                        <th class="p-4 font-bold text-sm text-gray-500">STUDENT NAME</th>
+                                        <th class="p-4 font-bold text-sm text-gray-500">CONTACT</th>
+                                        <th class="p-4 font-bold text-sm text-gray-500 text-right">EXPORT</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <template x-for="app in admissionApplications" :key="app.id">
-                                        <tr class="border-b">
-                                            <td class="p-4 font-mono text-sm" x-text="app.ref_id"></td>
-                                            <td class="p-4 font-bold" x-text="app.student_name"></td>
-                                            <td class="p-4 text-sm" x-text="app.parent_phone"></td>
+                                        <tr class="border-b hover:bg-gray-50 transition-colors">
+                                            <td class="p-4 font-mono text-xs text-gray-400" x-text="app.ref_id"></td>
+                                            <td class="p-4 font-bold text-primary" x-text="app.student_name"></td>
+                                            <td class="p-4 text-sm text-gray-600" x-text="app.parent_phone"></td>
                                             <td class="p-4 text-right">
-                                                <button @click="downloadAdmissionPDF(app)" class="bg-gray-100 px-3 py-1 rounded text-primary text-xs font-bold">PDF</button>
+                                                <button @click="downloadAdmissionPDF(app)" class="bg-primary/10 text-primary px-3 py-1 rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-colors">
+                                                    <i class="fas fa-file-pdf mr-1"></i> PDF
+                                                </button>
                                             </td>
                                         </tr>
                                     </template>
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                    
+                    <!-- Staff Manager -->
+                    <div x-show="adminSection === 'staff'" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <template x-for="member in staff" :key="member.id">
+                            <div class="bg-white p-6 rounded-2xl shadow-sm border flex flex-col items-center text-center">
+                                <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center text-primary text-3xl mb-4 border-2 border-secondary">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                                <h3 class="font-bold text-primary" x-text="member.name"></h3>
+                                <p class="text-sm text-secondary font-medium" x-text="member.designation"></p>
+                                <p class="text-xs text-gray-400 mt-1" x-text="member.qualification"></p>
+                                <div class="mt-4 flex gap-3">
+                                    <button @click="deleteItem('staff', member.id)" class="text-red-400 hover:text-red-600 text-sm">
+                                        <i class="fas fa-trash-alt mr-1"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- News Manager -->
+                    <div x-show="adminSection === 'news'" class="space-y-4">
+                        <template x-for="item in news" :key="item.id">
+                            <div class="bg-white p-6 rounded-2xl shadow-sm border flex justify-between items-start">
+                                <div>
+                                    <span class="text-[10px] font-bold text-secondary uppercase tracking-widest px-2 py-0.5 bg-secondary/10 rounded" x-text="item.type"></span>
+                                    <h3 class="font-bold text-lg mt-2 text-primary" x-text="item.title"></h3>
+                                    <p class="text-gray-600 text-sm mt-1" x-text="item.description"></p>
+                                    <p class="text-xs text-gray-400 mt-3" x-text="formatDate(item.date)"></p>
+                                </div>
+                                <button @click="deleteItem('news_events', item.id)" class="text-red-400">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -585,9 +676,9 @@
                 <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md border">
                     <h2 class="text-2xl font-bold text-primary text-center mb-8">Admin Access</h2>
                     <form @submit.prevent="handleAdminLogin" class="space-y-6">
-                        <input type="email" x-model="adminForm.email" placeholder="Email" required class="w-full p-3 border rounded-xl">
-                        <input type="password" x-model="adminForm.password" placeholder="Password" required class="w-full p-3 border rounded-xl">
-                        <button class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-lg">Secure Login</button>
+                        <input type="email" x-model="adminForm.email" placeholder="Email" required class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-primary/20">
+                        <input type="password" x-model="adminForm.password" placeholder="Password" required class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-primary/20">
+                        <button class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-lg hover:bg-blue-900 transition-colors">Secure Login</button>
                     </form>
                     <button @click="currentPage = 'home'" class="mt-6 text-gray-400 text-sm block mx-auto underline">Back to School Site</button>
                 </div>
@@ -603,55 +694,90 @@
                 <p class="text-gray-400 text-sm leading-relaxed">Dedicated to the holistic educational development of students in Akampadam, Nilambur since inception.</p>
             </div>
             <div>
-                <h3 class="font-bold text-xl mb-4">Contact</h3>
-                <p class="text-gray-400 text-sm">Eranhimangad P.O, Nilambur, Malappuram, Kerala - 679329</p>
-                <p class="text-gray-300 mt-2">04931 2027107</p>
+                <h3 class="font-bold text-xl mb-4 text-white">Contact Us</h3>
+                <div class="space-y-3">
+                    <p class="text-gray-400 text-sm"><i class="fas fa-map-marker-alt mr-2 text-secondary"></i> Eranhimangad P.O, Nilambur, Malappuram, Kerala - 679329</p>
+                    <p class="text-gray-400 text-sm"><i class="fas fa-phone mr-2 text-secondary"></i> 04931 2027107</p>
+                </div>
                 <div class="flex justify-center md:justify-start gap-6 mt-6">
                     <a href="https://www.facebook.com/profile.php?id=61585074544445" target="_blank" class="hover:text-secondary"><i class="fab fa-facebook text-2xl"></i></a>
                     <a href="https://www.instagram.com/rahmaniyya_public_school_?igsh=MXUwZW1vam1yanU1MA==" target="_blank" class="hover:text-secondary"><i class="fab fa-instagram text-2xl"></i></a>
                 </div>
             </div>
             <div>
-                <h3 class="font-bold text-xl mb-4">Navigation</h3>
+                <h3 class="font-bold text-xl mb-4 text-white">Navigation</h3>
                 <div class="space-y-2">
-                    <a @click="currentPage = 'home'" class="block text-gray-400 cursor-pointer hover:text-white">Home</a>
-                    <a @click="currentPage = 'admission'" class="block text-gray-400 cursor-pointer hover:text-white">Admission</a>
-                    <a @click="currentPage = 'results'" class="block text-gray-400 cursor-pointer hover:text-white">Student Results</a>
+                    <a @click="currentPage = 'home'" class="block text-gray-400 cursor-pointer hover:text-white transition-colors">Home</a>
+                    <a @click="currentPage = 'admission'" class="block text-gray-400 cursor-pointer hover:text-white transition-colors">Admission</a>
+                    <a @click="currentPage = 'results'" class="block text-gray-400 cursor-pointer hover:text-white transition-colors">Student Results</a>
                 </div>
             </div>
         </div>
         <div class="container mx-auto px-4 mt-12 pt-8 border-t border-white/5 text-center text-xs text-gray-500">
-            © 2024 Rahmaniyya Public School. Akampadam, Nilambur.
+            © 2024 Rahmaniyya Public School. Akampadam, Nilambur. All rights reserved.
         </div>
     </footer>
 
     <!-- ADMIN MODAL -->
     <div x-show="modalOpen" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-        <div @click.away="modalOpen = false" class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
-            <h3 class="text-2xl font-bold mb-6 text-primary" x-text="'New ' + modalType"></h3>
+        <div @click.away="modalOpen = false" class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl animate-fade-in">
+            <h3 class="text-2xl font-bold mb-6 text-primary" x-text="'Add New ' + modalType"></h3>
             <form @submit.prevent="handleModalSubmit" class="space-y-4">
+                
+                <!-- Notification Form -->
                 <template x-if="modalType === 'notification'">
                     <div class="space-y-4">
-                        <input type="text" x-model="modalForm.text" placeholder="Notification Content" required class="w-full p-3 border rounded-xl">
-                        <input type="url" x-model="modalForm.link" placeholder="Hyperlink (optional)" class="w-full p-3 border rounded-xl">
+                        <label class="block text-xs font-bold text-gray-400 uppercase">Alert Text</label>
+                        <input type="text" x-model="modalForm.text" placeholder="e.g. Results published for March 2024" required class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-secondary/20">
+                        <label class="block text-xs font-bold text-gray-400 uppercase">Hyperlink (Optional)</label>
+                        <input type="url" x-model="modalForm.link" placeholder="https://..." class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-secondary/20">
                     </div>
                 </template>
+
+                <!-- Result Form -->
                 <template x-if="modalType === 'result'">
                     <div class="space-y-4">
-                        <input type="text" x-model="modalForm.student_id" placeholder="Admission ID" required class="w-full p-3 border rounded-xl">
-                        <input type="text" x-model="modalForm.student_name" placeholder="Full Name" required class="w-full p-3 border rounded-xl">
-                        <input type="date" x-model="modalForm.dob" required class="w-full p-3 border rounded-xl">
-                        <input type="text" x-model="modalForm.grade" placeholder="Overall Grade" required class="w-full p-3 border rounded-xl">
+                        <input type="text" x-model="modalForm.student_id" placeholder="Admission ID (e.g. RPS2024001)" required class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-secondary/20">
+                        <input type="text" x-model="modalForm.student_name" placeholder="Student Full Name" required class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-secondary/20">
+                        <input type="date" x-model="modalForm.dob" required class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-secondary/20">
+                        <input type="text" x-model="modalForm.grade" placeholder="Overall Grade (e.g. A+)" required class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-secondary/20">
                     </div>
                 </template>
-                <button class="w-full bg-primary text-white py-4 rounded-xl font-bold">Save Data</button>
+                
+                <!-- Staff Form -->
+                <template x-if="modalType === 'staff'">
+                    <div class="space-y-4">
+                        <input type="text" x-model="modalForm.name" placeholder="Teacher Name" required class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-secondary/20">
+                        <input type="text" x-model="modalForm.designation" placeholder="Designation (e.g. Math Teacher)" required class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-secondary/20">
+                        <input type="text" x-model="modalForm.qualification" placeholder="Qualification (e.g. M.Sc, B.Ed)" required class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-secondary/20">
+                    </div>
+                </template>
+                
+                <!-- News Form -->
+                <template x-if="modalType === 'news'">
+                    <div class="space-y-4">
+                        <select x-model="modalForm.type" required class="w-full p-3 border rounded-xl outline-none">
+                            <option value="">Select Category</option>
+                            <option value="News">News</option>
+                            <option value="Event">Event</option>
+                            <option value="Achievement">Achievement</option>
+                        </select>
+                        <input type="text" x-model="modalForm.title" placeholder="Headline" required class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-secondary/20">
+                        <textarea x-model="modalForm.description" placeholder="Brief Description" required class="w-full p-3 border rounded-xl h-24 outline-none focus:ring-2 focus:ring-secondary/20"></textarea>
+                        <input type="date" x-model="modalForm.date" required class="w-full p-3 border rounded-xl outline-none">
+                    </div>
+                </template>
+
+                <button class="w-full bg-primary text-white py-4 rounded-xl font-bold shadow-lg hover:bg-blue-900 transition-colors">
+                    Save Entry
+                </button>
             </form>
         </div>
     </div>
 
     <!-- TOAST NOTIFICATION -->
-    <div x-show="toast.show" x-cloak x-transition class="fixed bottom-8 right-8 z-[100] bg-gray-900 text-white px-8 py-3 rounded-full shadow-2xl flex items-center gap-3">
-        <i :class="toast.success ? 'fas fa-check-circle text-green-400' : 'fas fa-times-circle text-red-400'"></i>
+    <div x-show="toast.show" x-cloak x-transition:enter="transition ease-out duration-300" x-transition:enter-start="translate-y-10 opacity-0" x-transition:enter-end="translate-y-0 opacity-100" class="fixed bottom-8 right-8 z-[100] bg-gray-900 text-white px-8 py-3 rounded-full shadow-2xl flex items-center gap-3">
+        <i :class="toast.success ? 'fas fa-check-circle text-green-400' : 'fas fa-exclamation-circle text-red-400'"></i>
         <span x-text="toast.message"></span>
     </div>
 
