@@ -187,9 +187,9 @@
                         ];
 
                         this.staff = sRes.data && sRes.data.length ? sRes.data : [
-                            { id: 1, name: 'Mrs. Sreelatha V', designation: 'Principal', qualification: 'M.A, B.Ed, M.Phil', phone: '04931 2027107', photo_url: 'https://images.unsplash.com/photo-1544717297-fa154da09f9b?q=80&w=400' },
-                            { id: 2, name: 'Mr. Abdul Rahman', designation: 'HOD Science', qualification: 'M.Sc, B.Ed', phone: '04931 2027107', photo_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400' },
-                            { id: 3, name: 'Ms. Meera Nair', designation: 'English Lead', qualification: 'M.A, B.Ed', phone: '04931 2027107', photo_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400' }
+                            { id: 1, name: 'Mrs. Sreelatha V', designation: 'Principal', qualification: 'M.A, B.Ed, M.Phil', phone: '04931 2027107', email: 'principal@rahmaniyya.com', photo_url: 'https://images.unsplash.com/photo-1544717297-fa154da09f9b?q=80&w=400' },
+                            { id: 2, name: 'Mr. Abdul Rahman', designation: 'HOD Science', qualification: 'M.Sc, B.Ed', phone: '04931 2027107', email: 'science@rahmaniyya.com', photo_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400' },
+                            { id: 3, name: 'Ms. Meera Nair', designation: 'English Lead', qualification: 'M.A, B.Ed', phone: '04931 2027107', email: 'english@rahmaniyya.com', photo_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=400' }
                         ];
 
                         this.gallery = gRes.data && gRes.data.length ? gRes.data : [
@@ -862,6 +862,7 @@
                                 <div class="p-6 space-y-2 text-xs text-gray-500">
                                     <p><i class="fas fa-graduation-cap text-secondary mr-2"></i> <span x-text="member.qualification"></span></p>
                                     <p><i class="fas fa-phone-alt text-secondary mr-2"></i> <span x-text="member.phone"></span></p>
+                                    <p x-show="member.email"><i class="fas fa-envelope text-secondary mr-2"></i> <span x-text="member.email"></span></p>
                                 </div>
                             </div>
                         </template>
@@ -1004,6 +1005,10 @@
                                         <div class="w-20 h-20 bg-gray-100 rounded-full mx-auto mb-4 overflow-hidden flex items-center justify-center text-primary text-2xl border-2 border-secondary"><img :src="member.photo_url" class="w-full h-full object-cover" onerror="this.style.display='none'"><i class="fas fa-user-tie"></i></div>
                                         <h3 class="font-bold text-center text-primary" x-text="member.name"></h3>
                                         <p class="text-xs text-center text-gray-400" x-text="member.designation"></p>
+                                        <div class="mt-4 pt-4 border-t text-[10px] text-gray-500 space-y-1">
+                                            <p x-show="member.phone"><i class="fas fa-phone mr-1"></i> <span x-text="member.phone"></span></p>
+                                            <p x-show="member.email"><i class="fas fa-envelope mr-1"></i> <span x-text="member.email"></span></p>
+                                        </div>
                                     </div>
                                 </template>
                              </template>
@@ -1123,48 +1128,12 @@
             <h3 class="text-3xl font-bold mb-8 text-primary uppercase" x-text="'New ' + modalType"></h3>
             <form @submit.prevent="handleModalSubmit" class="space-y-5">
                 <template x-if="modalType === 'notification'"><div class="space-y-4"><input type="text" x-model="modalForm.text" placeholder="Notification Content" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"><input type="url" x-model="modalForm.link" placeholder="Link (Optional)" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"></div></template>
-                <template x-if="modalType === 'staff'"><div class="space-y-4"><input type="text" x-model="modalForm.name" placeholder="Staff Name" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"><input type="text" x-model="modalForm.designation" placeholder="Job Title" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"><input type="text" x-model="modalForm.qualification" placeholder="Qualifications" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"><input type="url" x-model="modalForm.photo_url" placeholder="Photo URL" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"></div></template>
-                <template x-if="modalType === 'gallery'"><div class="space-y-4"><input type="url" x-model="modalForm.url" placeholder="Image URL" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"><input type="text" x-model="modalForm.caption" placeholder="Caption (Optional)" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"></div></template>
-                <template x-if="modalType === 'news'"><div class="space-y-4"><input type="text" x-model="modalForm.title" placeholder="News Headline" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"><textarea x-model="modalForm.description" placeholder="Description" required class="w-full p-4 bg-gray-50 border rounded-2xl h-24 outline-none"></textarea><input type="date" x-model="modalForm.date" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none"></div></template>
                 
-                <template x-if="modalType === 'club'">
-                    <div class="space-y-4 text-left">
-                        <input type="text" x-model="modalForm.name" placeholder="Club Name" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                        <textarea x-model="modalForm.purpose" placeholder="Club Purpose" required class="w-full p-4 bg-gray-50 border rounded-2xl h-24 outline-none"></textarea>
-                        <div class="grid grid-cols-2 gap-4">
-                            <input type="text" x-model="modalForm.teacher_name" placeholder="Teacher Coordinator" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                            <input type="tel" x-model="modalForm.teacher_phone" placeholder="Coordinator Phone" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                        </div>
-                        <input type="text" x-model="modalForm.student_name" placeholder="Student Representative" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                        <input type="text" x-model="modalForm.icon" placeholder="Icon Name (e.g. leaf, book-open, flask)" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                    </div>
-                </template>
-
-                <template x-if="modalType === 'result'">
+                <template x-if="modalType === 'staff'">
                     <div class="space-y-4">
-                        <input type="text" x-model="modalForm.student_id" placeholder="Student ID (RPS...)" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                        <input type="text" x-model="modalForm.student_name" placeholder="Student Name" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        <input type="text" x-model="modalForm.name" placeholder="Staff Name" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        <input type="text" x-model="modalForm.designation" placeholder="Job Title" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                        <input type="text" x-model="modalForm.qualification" placeholder="Qualifications" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
                         <div class="grid grid-cols-2 gap-4">
-                            <input type="date" x-model="modalForm.dob" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                            <input type="text" x-model="modalForm.grade" placeholder="Overall Grade (A+)" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                        </div>
-                        <input type="text" x-model="modalForm.exam_name" placeholder="Exam Name (e.g. Term I)" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                        <div>
-                            <label class="text-[10px] font-bold text-gray-400 uppercase ml-1 block mb-1">Schedule Publish Time (Optional)</label>
-                            <input type="datetime-local" x-model="modalForm.scheduled_at" class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
-                        </div>
-                    </div>
-                </template>
-                <button class="w-full bg-primary text-white py-5 rounded-2xl font-bold shadow-2xl hover:bg-blue-900 transition-all uppercase tracking-widest text-sm">Save Record</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- TOAST -->
-    <div x-show="toast.show" x-cloak x-transition class="fixed bottom-10 right-10 z-[100] bg-gray-900 text-white px-10 py-4 rounded-3xl shadow-2xl flex items-center gap-4 border border-white/10">
-        <i :class="toast.success ? 'fas fa-check-circle text-green-400' : 'fas fa-exclamation-circle text-red-400'" class="text-xl"></i>
-        <span class="font-bold text-sm tracking-wide" x-text="toast.message"></span>
-    </div>
-
-</body>
-</html>
+                            <input type="tel" x-model="modalForm.phone" placeholder="Phone Number" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
+                            <input
