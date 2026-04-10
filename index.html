@@ -113,6 +113,16 @@
                 staff: [],
                 admissionApplications: [],
                 results: [],
+                resultStructure: {
+    student_id: '',
+    student_name: '',
+    dob: '',
+    class: '',
+    subjects: [], // dynamic subjects
+    total_mark: 0,
+    grade: '',
+    rank: ''
+},
                 gallery: [],
 
                 milestones: [
@@ -319,9 +329,10 @@
 
                     const payload = { ...this.modalForm };
                     if (this.modalType === 'notification') payload.active = true;
-                    if (this.modalType === 'result') {
-                        payload.published = true;
-                    }
+                   if (this.modalType === 'result') {
+    payload.published = true;
+    if (!payload.subjects) payload.subjects = [];
+}
 
                     const { error } = await supabaseClient.from(table).insert([payload]);
                     if (error) {
@@ -371,21 +382,35 @@
                             const firstSheet = workbook.SheetNames[0];
                             const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
 
-                            const formattedResults = jsonData.map(row => ({
-                                student_id: String(row["Student ID"]),
-                                dob: row["Date of Birth"],
-                                student_name: row["Student Name"],
-                                exam_name: row["Exam Name"],
-                                subject: row["Subject"],
-                                max_mark: row["Max Mark"],
-                                awarded_mark: row["Awarded Mark"],
-                                total_mark: row["Total Mark"],
-                                rank: row["Rank"],
-                                sub_grade: row["Subject Grade"],
-                                grade: row["Overall Grade"],
-                                scheduled_at: row["Publish Time"] ? new Date(row["Publish Time"]).toISOString() : null,
-                                published: true
-                            }));
+                            const grouped = {};
+
+jsonData.forEach(row => {
+    const id = String(row["Student ID"]);
+
+    if (!grouped[id]) {
+        grouped[id] = {
+            student_id: id,
+            student_name: row["Student Name"],
+            dob: row["Date of Birth"],
+            class: row["Class"],
+            subjects: [],
+            total_mark: row["Total Mark"],
+            grade: row["Overall Grade"],
+            rank: row["Rank"],
+            scheduled_at: row["Publish Time"] ? new Date(row["Publish Time"]).toISOString() : null,
+            published: true
+        };
+    }
+
+    grouped[id].subjects.push({
+        name: row["Subject"],
+        max_mark: row["Max Mark"],
+        awarded_mark: row["Awarded Mark"],
+        grade: row["Subject Grade"]
+    });
+});
+
+const formattedResults = Object.values(grouped);
 
                             const { error } = await supabaseClient.from('results').insert(formattedResults);
                             if (error) throw error;
@@ -756,6 +781,10 @@
                             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b pb-6">
                                 <div>
                                     <h3 class="text-3xl font-bold text-primary" x-text="activeResult?.student_name"></h3>
+                                    <p class="text-xs text-gray-500 mt-1">
+    Class: <span x-text="activeResult?.class"></span> |
+    DOB: <span x-text="activeResult?.dob"></span>
+</p>
                                     <p class="text-sm text-gray-400 font-medium uppercase tracking-widest mt-1" x-text="'ID: ' + activeResult?.student_id"></p>
                                 </div>
                                 <div class="mt-4 md:mt-0 text-right">
@@ -764,11 +793,30 @@
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-                                <div class="bg-white p-4 rounded-2xl shadow-sm border"><p class="text-[9px] font-bold text-gray-400 uppercase">Exam</p><p class="text-xs font-bold text-primary" x-text="activeResult?.exam_name"></p></div>
-                                <div class="bg-white p-4 rounded-2xl shadow-sm border"><p class="text-[9px] font-bold text-gray-400 uppercase">Marks</p><p class="text-xs font-bold text-primary" x-text="(activeResult?.awarded_mark || 0) + ' / ' + (activeResult?.max_mark || 100)"></p></div>
-                                <div class="bg-white p-4 rounded-2xl shadow-sm border"><p class="text-[9px] font-bold text-gray-400 uppercase">Total Mark</p><p class="text-xs font-bold text-primary" x-text="activeResult?.total_mark || 'N/A'"></p></div>
-                                <div class="bg-white p-4 rounded-2xl shadow-sm border"><p class="text-[9px] font-bold text-gray-400 uppercase">Rank</p><p class="text-xs font-bold text-secondary" x-text="activeResult?.rank || 'N/A'"></p></div>
-                            </div>
+                                <div class="mt-6">
+    <h4 class="font-bold text-primary mb-3">Subject Wise Marks</h4>
+
+    <table class="w-full text-sm border rounded-xl overflow-hidden">
+        <thead class="bg-gray-100 text-xs uppercase">
+            <tr>
+                <th class="p-2">Subject</th>
+                <th class="p-2">Max</th>
+                <th class="p-2">Mark</th>
+                <th class="p-2">Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            <template x-for="sub in activeResult.subjects" :key="sub.name">
+                <tr class="text-center border-t">
+                    <td class="p-2" x-text="sub.name"></td>
+                    <td class="p-2" x-text="sub.max_mark"></td>
+                    <td class="p-2" x-text="sub.awarded_mark"></td>
+                    <td class="p-2 font-bold text-secondary" x-text="sub.grade"></td>
+                </tr>
+            </template>
+        </tbody>
+    </table>
+</div>
                         </div>
                         <button @click="viewingResult = false" class="text-primary font-bold hover:underline flex items-center gap-2"><i class="fas fa-arrow-left"></i> Check Another Identity</button>
                     </div>
