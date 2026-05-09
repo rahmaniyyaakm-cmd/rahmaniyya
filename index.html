@@ -341,11 +341,19 @@
     let total = 0;
     let maxTotal = 0;
 
-    payload.subjects.forEach(sub => {
-        total += Number(sub.awarded_mark || 0);
-        maxTotal += Number(sub.max_mark || 0);
-    });
+   payload.subjects.forEach(sub => {
 
+    let mark = Number(sub.awarded_mark || 0);
+    let max = Number(sub.max_mark || 0);
+
+    total += mark;
+    maxTotal += max;
+
+    let per = (mark / max) * 100;
+
+    sub.grade = this.calculateGrade(per);
+
+});
     payload.total_mark = total;
     payload.max_total = maxTotal;
 
@@ -363,9 +371,17 @@
 
     sameClass.sort((a, b) => b.total_mark - a.total_mark);
 
-    sameClass.forEach((student, index) => {
-        student.rank = index + 1;
-    });
+   sameClass.forEach(async (student, index) => {
+
+    student.rank = index + 1;
+
+    if (student.id) {
+        await supabaseClient
+            .from('results')
+            .update({ rank: student.rank })
+            .eq('id', student.id);
+    }
+});
 
     payload.rank = sameClass.find(
         s => s.student_id === payload.student_id
@@ -898,7 +914,7 @@ getSubjectsByClass(className) {
                                 </div>
                                 <div class="mt-4 md:mt-0 text-right">
                                     <p class="text-[10px] font-bold text-gray-400 uppercase">Overall Grade</p>
-                                    <p class="text-6xl font-black text-secondary" x-text="activeResult?.grade"></p>
+                                    <p class="text-6xl font-black text-secondary"x-text="activeResult?.grade || activeResult?.overall_grade"></p>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
@@ -923,7 +939,7 @@ getSubjectsByClass(className) {
 <div class="bg-white p-4 rounded-xl shadow text-center">
     <p class="text-xs text-gray-500">Overall Grade</p>
     <p class="text-2xl font-bold text-green-600"
-       x-text="activeResult?.grade"></p>
+       x-text="activeResult?.grade || activeResult?.overall_grade"></p>
 </div>
                                 <div class="mt-6">
     <h4 class="font-bold text-primary mb-3">Subject Wise Marks</h4>
