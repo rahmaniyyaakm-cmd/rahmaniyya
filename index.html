@@ -324,32 +324,12 @@
         subjects: []
     };
 }
-                    @change="modalForm.subjects = getSubjectsByClass(modalForm.class)"
+                   
                     <div class="mt-6">
 
     <template x-for="(sub,index) in modalForm.subjects" :key="index">
 
-        <div class="grid grid-cols-3 gap-3 mb-3">
-
-            <input type="text"
-                   x-model="sub.name"
-                   readonly
-                   class="p-3 border rounded-xl bg-gray-100">
-
-            <input type="number"
-                   x-model="sub.max_mark"
-                   readonly
-                   class="p-3 border rounded-xl bg-gray-100">
-
-            <input type="number"
-                   x-model="sub.awarded_mark"
-                   placeholder="Mark"
-                   class="p-3 border rounded-xl">
-        </div>
-
-    </template>
-
-</div>
+       
                     this.modalOpen = true;
                 },
 
@@ -412,8 +392,7 @@ payload.overall_grade = this.calculateGrade(percentage);
 }
 
                     const { error } = await supabaseClient.from(table).insert([payload]);
-                    await this.recalculateRanks(payload.class);
-                    calculateGrade(percentage) {
+              await this.recalculateRanks(payload.class);
                         async recalculateRanks(className) {
 
     const { data } = await supabaseClient
@@ -533,8 +512,6 @@ const formattedResults = Object.values(grouped);
                 prevSlide() { this.currentSlide = (this.currentSlide - 1 + this.sliderImages.length) % this.sliderImages.length; },
 getSubjectsByClass(className) {
 
-   getSubjectsByClass(className) {
-
     if (className === 'Grade I' || className === 'Grade II') {
 
         return [
@@ -565,7 +542,7 @@ getSubjectsByClass(className) {
     }
 
     return [];
-}
+},
                 calculateGrade(percentage) {
 
     if (percentage >= 90) return 'A+';
@@ -986,7 +963,7 @@ getSubjectsByClass(className) {
 <div class="bg-white p-4 rounded-xl shadow text-center">
     <p class="text-xs text-gray-500">Overall Grade</p>
     <p class="text-2xl font-bold text-green-600"
-       x-text="x-text="activeResult?.overall_grade"></p>
+       x-text="activeResult?.overall_grade"></p>
 </div>
                                 <div class="mt-6">
     <h4 class="font-bold text-primary mb-3">Subject Wise Marks</h4>
