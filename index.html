@@ -93,7 +93,7 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         window.schoolApp = function() {
-            return { 
+            return {
                 currentPage: 'home',
                 mobileMenuOpen: false,
                 currentSlide: 0,
@@ -113,18 +113,56 @@
                 staff: [],
                 admissionApplications: [],
                 results: [],
-       resultStructure: {
+                resultStructure: {
     student_id: '',
     student_name: '',
     dob: '',
     class: '',
-    subjects: [],
+    subjects: [], // dynamic subjects
     total_mark: 0,
-    max_total: 0,
-    percentage: 0,
-    overall_grade: '',
+    grade: '',
     rank: ''
 },
+getSubjectsByClass(className) {
+    if (className === 'I' || className === 'II') {
+        return [
+            { name: 'English', max_mark: 100 },
+            { name: 'Malayalam', max_mark: 100 },
+            { name: 'Hindi', max_mark: 100 },
+            { name: 'Arabic', max_mark: 100 },
+            { name: 'EVS', max_mark: 50 },
+            { name: 'GK', max_mark: 50 },
+            { name: 'IT', max_mark: 50 },
+            { name: 'Maths', max_mark: 100 }
+        ];
+    }
+
+    if (className === 'III' || className === 'IV') {
+        return [
+            { name: 'English', max_mark: 100 },
+            { name: 'Malayalam', max_mark: 100 },
+            { name: 'Hindi', max_mark: 100 },
+            { name: 'Arabic', max_mark: 100 },
+            { name: 'Science', max_mark: 100 },
+            { name: 'GK', max_mark: 50 },
+            { name: 'IT', max_mark: 50 },
+            { name: 'Maths', max_mark: 100 },
+            { name: 'Social Science', max_mark: 100 }
+        ];
+    }
+
+    return [];
+},
+
+calculateGrade(percentage) {
+    if (percentage >= 90) return 'A+';
+    if (percentage >= 80) return 'A';
+    if (percentage >= 70) return 'B+';
+    if (percentage >= 60) return 'B';
+    if (percentage >= 50) return 'C+';
+    if (percentage >= 40) return 'C';
+    return 'F';
+},   
                 gallery: [],
 
                 milestones: [
@@ -238,7 +276,30 @@
                         supabaseClient.from('results').select('*').order('id', { ascending: false })
                     ]);
                     this.admissionApplications = admRes.data || [];
-                    this.results = resRes.data || [];
+                this.results = resRes.data || [];
+
+// Auto Rank Calculation
+
+const groupedByClass = {};
+
+this.results.forEach(student => {
+
+    if (!groupedByClass[student.class]) {
+        groupedByClass[student.class] = [];
+    }
+
+    groupedByClass[student.class].push(student);
+});
+
+Object.keys(groupedByClass).forEach(cls => {
+
+    groupedByClass[cls]
+        .sort((a, b) => b.total_mark - a.total_mark)
+        .forEach((student, index) => {
+
+            student.rank = index + 1;
+        });
+});
                 },
 
                 async submitAdmission() {
@@ -314,30 +375,12 @@
                     }
                 },
 
-               showModal(section) {
-
-    const typeMap = {
-        'notifications': 'notification',
-        'staff': 'staff',
-        'results': 'result',
-        'news': 'news',
-        'gallery': 'gallery',
-        'clubs': 'club'
-    };
-
-    this.modalType = typeMap[section] || section;
-
-    this.modalForm = {};
-
-    if (section === 'results') {
-
-        this.modalForm = {
-            subjects: []
-        };
-    }
-
-    this.modalOpen = true;
-},
+                showModal(section) {
+                    const typeMap = { 'notifications': 'notification', 'staff': 'staff', 'results': 'result', 'news': 'news', 'gallery': 'gallery', 'clubs': 'club' };
+                    this.modalType = typeMap[section] || section;
+                    this.modalForm = {};
+                    this.modalOpen = true;
+                },
 
                 async handleModalSubmit() {
                     const tableMap = { 
@@ -353,53 +396,22 @@
 
     payload.published = true;
 
-    if (!payload.subjects) payload.subjects = [];
+    let totalObtained = 0;
+    let totalMaximum = 0;
 
-    // Calculate totals
-    let total = 0;
-    let maxTotal = 0;
+    payload.subjects.forEach(sub => {
+        totalObtained += Number(sub.awarded_mark);
+        totalMaximum += Number(sub.max_mark);
+    });
 
-   payload.subjects.forEach(sub => {
+    payload.total_mark = totalObtained;
 
-    let mark = Number(sub.awarded_mark || 0);
-    let max = Number(sub.max_mark || 0);
+    payload.percentage = ((totalObtained / totalMaximum) * 100).toFixed(2);
 
-    total += mark;
-    maxTotal += max;
-
-    let per = (mark / max) * 100;
-
-    sub.grade = this.calculateGrade(per);
-
-});
-    payload.total_mark = total;
-    payload.max_total = maxTotal;
-
-    // Percentage
-    const percentage = (total / maxTotal) * 100;
-    payload.percentage = percentage.toFixed(2);
-
-    // Overall Grade
-payload.overall_grade = this.calculateGrade(percentage);
-    // Rank Calculation
-    const sameClass = this.results.filter(r => r.class === payload.class);
-
-    sameClass.push(payload);
-
-    sameClass.sort((a, b) => b.total_mark - a.total_mark);
-
-  sameClass.forEach((student, index) => {
-    student.rank = index + 1;
-});
-
-    payload.rank = sameClass.find(
-        s => s.student_id === payload.student_id
-    ).rank;
+    payload.grade = this.calculateGrade(payload.percentage);
 }
 
-       const { error } = await supabaseClient.from(table).insert([payload]);
-
-await this.recalculateRanks(payload.class);
+                    const { error } = await supabaseClient.from(table).insert([payload]);
                     if (error) {
                         this.showToast("Error: " + error.message, false);
                     } else {
@@ -409,24 +421,7 @@ await this.recalculateRanks(payload.class);
                         this.showToast("Saved Successfully!", true);
                     }
                 },
-async recalculateRanks(className) {
 
-    const { data } = await supabaseClient
-        .from('results')
-        .select('*')
-        .eq('class', className)
-        .order('total_mark', { ascending: false });
-
-    if (!data) return;
-
-    for (let i = 0; i < data.length; i++) {
-
-        await supabaseClient
-            .from('results')
-            .update({ rank: i + 1 })
-            .eq('id', data[i].id);
-    }
-},
                 async deleteItem(table, id) {
                     if (confirm("Delete permanently?")) {
                         await supabaseClient.from(table).delete().eq('id', id);
@@ -477,7 +472,7 @@ jsonData.forEach(row => {
             class: row["Class"],
             subjects: [],
             total_mark: row["Total Mark"],
-           overall_grade: row["Overall Grade"],
+            grade: row["Overall Grade"],
             rank: row["Rank"],
             scheduled_at: row["Publish Time"] ? new Date(row["Publish Time"]).toISOString() : null,
             published: true
@@ -516,51 +511,7 @@ const formattedResults = Object.values(grouped);
                 },
                 nextSlide() { this.currentSlide = (this.currentSlide + 1) % this.sliderImages.length; },
                 prevSlide() { this.currentSlide = (this.currentSlide - 1 + this.sliderImages.length) % this.sliderImages.length; },
-getSubjectsByClass(className) {
 
-    if (className === 'Grade I' || className === 'Grade II') {
-
-        return [
-            { name: 'English', max_mark: 100 },
-            { name: 'Malayalam', max_mark: 100 },
-            { name: 'Hindi', max_mark: 50 },
-            { name: 'Arabi', max_mark: 50 },
-            { name: 'EVS', max_mark: 100 },
-            { name: 'GK', max_mark: 25 },
-            { name: 'IT', max_mark: 25 },
-            { name: 'Maths', max_mark: 100 }
-        ];
-    }
-
-    if (className === 'Grade III' || className === 'Grade IV') {
-
-        return [
-            { name: 'English', max_mark: 100 },
-            { name: 'Malayalam', max_mark: 100 },
-            { name: 'Hindi', max_mark: 50 },
-            { name: 'Arabi', max_mark: 50 },
-            { name: 'Science', max_mark: 100 },
-            { name: 'GK', max_mark: 25 },
-            { name: 'IT', max_mark: 25 },
-            { name: 'Maths', max_mark: 100 },
-            { name: 'Social Science', max_mark: 100 }
-        ];
-    }
-
-    return [];
-},
-                calculateGrade(percentage) {
-
-    if (percentage >= 90) return 'A+';
-    if (percentage >= 80) return 'A';
-    if (percentage >= 70) return 'B+';
-    if (percentage >= 60) return 'B';
-    if (percentage >= 50) return 'C+';
-    if (percentage >= 40) return 'C';
-
-    return 'F';
-},
-                
                 showToast(message, success) {
                     this.toast = { show: true, message, success };
                     setTimeout(() => this.toast.show = false, 4000);
@@ -944,43 +895,43 @@ getSubjectsByClass(className) {
                                 </div>
                                 <div class="mt-4 md:mt-0 text-right">
                                     <p class="text-[10px] font-bold text-gray-400 uppercase">Overall Grade</p>
-                                    <p class="text-6xl font-black text-secondary"x-text="activeResult?.overall_grade"></p>
+                                    <p class="text-6xl font-black text-secondary" x-text="activeResult?.grade"></p>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-                                <div class="bg-white p-4 rounded-xl shadow text-center">
-    <p class="text-xs text-gray-500">Total Mark</p>
-    <p class="text-2xl font-bold text-primary"
-       x-text="activeResult?.total_mark"></p>
-</div>
-
-<div class="bg-white p-4 rounded-xl shadow text-center">
-    <p class="text-xs text-gray-500">Percentage</p>
-    <p class="text-2xl font-bold text-primary"
-       x-text="activeResult?.percentage + '%'"></p>
-</div>
-
-<div class="bg-white p-4 rounded-xl shadow text-center">
-    <p class="text-xs text-gray-500">Rank</p>
-    <p class="text-2xl font-bold text-secondary"
-       x-text="activeResult?.rank"></p>
-</div>
-
-<div class="bg-white p-4 rounded-xl shadow text-center">
-    <p class="text-xs text-gray-500">Overall Grade</p>
-    <p class="text-2xl font-bold text-green-600"
-       x-text="activeResult?.overall_grade"></p>
-</div>
                                 <div class="mt-6">
     <h4 class="font-bold text-primary mb-3">Subject Wise Marks</h4>
 
     <table class="w-full text-sm border rounded-xl overflow-hidden">
         <thead class="bg-gray-100 text-xs uppercase">
             <tr>
-                <th class="p-2">Subject</th>
-                <th class="p-2">Max</th>
-                <th class="p-2">Mark</th>
-                <th class="p-2">Grade</th>
+                <div class="mt-6 grid grid-cols-2 gap-4">
+
+    <div class="bg-gray-100 p-4 rounded-xl">
+        <p class="text-xs text-gray-500">Total Mark</p>
+        <p class="text-2xl font-bold text-primary"
+           x-text="activeResult.total_mark"></p>
+    </div>
+
+    <div class="bg-gray-100 p-4 rounded-xl">
+        <p class="text-xs text-gray-500">Class Rank</p>
+        <p class="text-2xl font-bold text-secondary"
+           x-text="activeResult.rank"></p>
+    </div>
+
+    <div class="bg-gray-100 p-4 rounded-xl">
+        <p class="text-xs text-gray-500">Percentage</p>
+        <p class="text-2xl font-bold text-primary"
+           x-text="activeResult.percentage + '%'"></p>
+    </div>
+
+    <div class="bg-gray-100 p-4 rounded-xl">
+        <p class="text-xs text-gray-500">Overall Grade</p>
+        <p class="text-2xl font-bold text-secondary"
+           x-text="activeResult.grade"></p>
+    </div>
+
+</div>
             </tr>
         </thead>
         <tbody>
@@ -1402,71 +1353,6 @@ getSubjectsByClass(className) {
                 </template>
 
                 <template x-if="modalType === 'result'">
-                    <div class="space-y-4">
-
-    <input type="text"
-           x-model="modalForm.student_id"
-           placeholder="Student ID"
-           class="w-full p-4 border rounded-xl"
-           required>
-
-    <input type="text"
-           x-model="modalForm.student_name"
-           placeholder="Student Name"
-           class="w-full p-4 border rounded-xl"
-           required>
-
-    <input type="date"
-           x-model="modalForm.dob"
-           class="w-full p-4 border rounded-xl"
-           required>
-
-</div>
-                    <select x-model="modalForm.class"
-        @change="modalForm.subjects = getSubjectsByClass(modalForm.class).map(sub => ({
-            name: sub,
-            max_mark: '',
-            awarded_mark: '',
-            grade: ''
-        }))"
-        class="w-full p-4 border rounded-xl">
-
-    <option value="">Select Class</option>
-    <option>Grade I</option>
-    <option>Grade II</option>
-    <option>Grade III</option>
-    <option>Grade IV</option>
-</select>
-                    <template x-for="(sub, index) in modalForm.subjects" :key="index">
-
-    <div class="grid grid-cols-4 gap-2 mb-3">
-
-        <input type="text"
-               x-model="sub.name"
-               readonly
-               class="p-2 border rounded">
-
-        <input type="number"
-               x-model="sub.max_mark"
-               placeholder="Max">
-
-        <input type="number"
-               x-model="sub.awarded_mark"
-               placeholder="Mark"
-
-               @input="
-                    let per = (sub.awarded_mark / sub.max_mark) * 100;
-                    sub.grade = calculateGrade(per);
-               ">
-
-        <input type="text"
-               x-model="sub.grade"
-               readonly
-               class="p-2 border rounded bg-gray-100">
-
-    </div>
-
-</template>
                     <div class="space-y-4 text-left">
                         <input type="text" x-model="modalForm.student_id" placeholder="Student ID (RPS...)" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
                         <input type="text" x-model="modalForm.student_name" placeholder="Student Name" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
