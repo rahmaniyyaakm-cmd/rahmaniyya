@@ -93,7 +93,7 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         window.schoolApp = function() {
-            return {
+            return { 
                 currentPage: 'home',
                 mobileMenuOpen: false,
                 currentSlide: 0,
@@ -113,14 +113,16 @@
                 staff: [],
                 admissionApplications: [],
                 results: [],
-                resultStructure: {
+       resultStructure: {
     student_id: '',
     student_name: '',
     dob: '',
     class: '',
-    subjects: [], // dynamic subjects
+    subjects: [],
     total_mark: 0,
-    grade: '',
+    max_total: 0,
+    percentage: 0,
+    overall_grade: '',
     rank: ''
 },
                 gallery: [],
@@ -329,9 +331,45 @@
 
                     const payload = { ...this.modalForm };
                     if (this.modalType === 'notification') payload.active = true;
-                   if (this.modalType === 'result') {
+                  if (this.modalType === 'result') {
+
     payload.published = true;
+
     if (!payload.subjects) payload.subjects = [];
+
+    // Calculate totals
+    let total = 0;
+    let maxTotal = 0;
+
+    payload.subjects.forEach(sub => {
+        total += Number(sub.awarded_mark || 0);
+        maxTotal += Number(sub.max_mark || 0);
+    });
+
+    payload.total_mark = total;
+    payload.max_total = maxTotal;
+
+    // Percentage
+    const percentage = (total / maxTotal) * 100;
+    payload.percentage = percentage.toFixed(2);
+
+    // Overall Grade
+    payload.grade = this.calculateGrade(percentage);
+
+    // Rank Calculation
+    const sameClass = this.results.filter(r => r.class === payload.class);
+
+    sameClass.push(payload);
+
+    sameClass.sort((a, b) => b.total_mark - a.total_mark);
+
+    sameClass.forEach((student, index) => {
+        student.rank = index + 1;
+    });
+
+    payload.rank = sameClass.find(
+        s => s.student_id === payload.student_id
+    ).rank;
 }
 
                     const { error } = await supabaseClient.from(table).insert([payload]);
@@ -434,7 +472,49 @@ const formattedResults = Object.values(grouped);
                 },
                 nextSlide() { this.currentSlide = (this.currentSlide + 1) % this.sliderImages.length; },
                 prevSlide() { this.currentSlide = (this.currentSlide - 1 + this.sliderImages.length) % this.sliderImages.length; },
+getSubjectsByClass(className) {
 
+    if (className === 'Grade I' || className === 'Grade II') {
+        return [
+            'English',
+            'Malayalam',
+            'Hindi',
+            'Arabi',
+            'EVS',
+            'GK',
+            'IT',
+            'Maths'
+        ];
+    }
+
+    if (className === 'Grade III' || className === 'Grade IV') {
+        return [
+            'English',
+            'Malayalam',
+            'Hindi',
+            'Arabi',
+            'Science',
+            'GK',
+            'IT',
+            'Maths',
+            'Social Science'
+        ];
+    }
+
+    return [];
+},
+                calculateGrade(percentage) {
+
+    if (percentage >= 90) return 'A+';
+    if (percentage >= 80) return 'A';
+    if (percentage >= 70) return 'B+';
+    if (percentage >= 60) return 'B';
+    if (percentage >= 50) return 'C+';
+    if (percentage >= 40) return 'C';
+
+    return 'F';
+},
+                
                 showToast(message, success) {
                     this.toast = { show: true, message, success };
                     setTimeout(() => this.toast.show = false, 4000);
@@ -822,6 +902,29 @@ const formattedResults = Object.values(grouped);
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+                                <div class="bg-white p-4 rounded-xl shadow text-center">
+    <p class="text-xs text-gray-500">Total Mark</p>
+    <p class="text-2xl font-bold text-primary"
+       x-text="activeResult?.total_mark"></p>
+</div>
+
+<div class="bg-white p-4 rounded-xl shadow text-center">
+    <p class="text-xs text-gray-500">Percentage</p>
+    <p class="text-2xl font-bold text-primary"
+       x-text="activeResult?.percentage + '%'"></p>
+</div>
+
+<div class="bg-white p-4 rounded-xl shadow text-center">
+    <p class="text-xs text-gray-500">Rank</p>
+    <p class="text-2xl font-bold text-secondary"
+       x-text="activeResult?.rank"></p>
+</div>
+
+<div class="bg-white p-4 rounded-xl shadow text-center">
+    <p class="text-xs text-gray-500">Overall Grade</p>
+    <p class="text-2xl font-bold text-green-600"
+       x-text="activeResult?.grade"></p>
+</div>
                                 <div class="mt-6">
     <h4 class="font-bold text-primary mb-3">Subject Wise Marks</h4>
 
@@ -1253,6 +1356,51 @@ const formattedResults = Object.values(grouped);
                 </template>
 
                 <template x-if="modalType === 'result'">
+                    <select x-model="modalForm.class"
+        @change="modalForm.subjects = getSubjectsByClass(modalForm.class).map(sub => ({
+            name: sub,
+            max_mark: '',
+            awarded_mark: '',
+            grade: ''
+        }))"
+        class="w-full p-4 border rounded-xl">
+
+    <option value="">Select Class</option>
+    <option>Grade I</option>
+    <option>Grade II</option>
+    <option>Grade III</option>
+    <option>Grade IV</option>
+</select>
+                    <template x-for="(sub, index) in modalForm.subjects" :key="index">
+
+    <div class="grid grid-cols-4 gap-2 mb-3">
+
+        <input type="text"
+               x-model="sub.name"
+               readonly
+               class="p-2 border rounded">
+
+        <input type="number"
+               x-model="sub.max_mark"
+               placeholder="Max">
+
+        <input type="number"
+               x-model="sub.awarded_mark"
+               placeholder="Mark"
+
+               @input="
+                    let per = (sub.awarded_mark / sub.max_mark) * 100;
+                    sub.grade = calculateGrade(per);
+               ">
+
+        <input type="text"
+               x-model="sub.grade"
+               readonly
+               class="p-2 border rounded bg-gray-100">
+
+    </div>
+
+</template>
                     <div class="space-y-4 text-left">
                         <input type="text" x-model="modalForm.student_id" placeholder="Student ID (RPS...)" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
                         <input type="text" x-model="modalForm.student_name" placeholder="Student Name" required class="w-full p-4 bg-gray-50 border rounded-2xl outline-none">
