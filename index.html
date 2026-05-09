@@ -318,6 +318,38 @@
                     const typeMap = { 'notifications': 'notification', 'staff': 'staff', 'results': 'result', 'news': 'news', 'gallery': 'gallery', 'clubs': 'club' };
                     this.modalType = typeMap[section] || section;
                     this.modalForm = {};
+                    if (section === 'results') {
+
+    this.modalForm = {
+        subjects: []
+    };
+}
+                    @change="modalForm.subjects = getSubjectsByClass(modalForm.class)"
+                    <div class="mt-6">
+
+    <template x-for="(sub,index) in modalForm.subjects" :key="index">
+
+        <div class="grid grid-cols-3 gap-3 mb-3">
+
+            <input type="text"
+                   x-model="sub.name"
+                   readonly
+                   class="p-3 border rounded-xl bg-gray-100">
+
+            <input type="number"
+                   x-model="sub.max_mark"
+                   readonly
+                   class="p-3 border rounded-xl bg-gray-100">
+
+            <input type="number"
+                   x-model="sub.awarded_mark"
+                   placeholder="Mark"
+                   class="p-3 border rounded-xl">
+        </div>
+
+    </template>
+
+</div>
                     this.modalOpen = true;
                 },
 
@@ -362,8 +394,7 @@
     payload.percentage = percentage.toFixed(2);
 
     // Overall Grade
-    payload.grade = this.calculateGrade(percentage);
-
+payload.overall_grade = this.calculateGrade(percentage);
     // Rank Calculation
     const sameClass = this.results.filter(r => r.class === payload.class);
 
@@ -371,16 +402,8 @@
 
     sameClass.sort((a, b) => b.total_mark - a.total_mark);
 
-   sameClass.forEach(async (student, index) => {
-
+  sameClass.forEach((student, index) => {
     student.rank = index + 1;
-
-    if (student.id) {
-        await supabaseClient
-            .from('results')
-            .update({ rank: student.rank })
-            .eq('id', student.id);
-    }
 });
 
     payload.rank = sameClass.find(
@@ -389,6 +412,26 @@
 }
 
                     const { error } = await supabaseClient.from(table).insert([payload]);
+                    await this.recalculateRanks(payload.class);
+                    calculateGrade(percentage) {
+                        async recalculateRanks(className) {
+
+    const { data } = await supabaseClient
+        .from('results')
+        .select('*')
+        .eq('class', className)
+        .order('total_mark', { ascending: false });
+
+    if (!data) return;
+
+    for (let i = 0; i < data.length; i++) {
+
+        await supabaseClient
+            .from('results')
+            .update({ rank: i + 1 })
+            .eq('id', data[i].id);
+    }
+},
                     if (error) {
                         this.showToast("Error: " + error.message, false);
                     } else {
@@ -449,7 +492,7 @@ jsonData.forEach(row => {
             class: row["Class"],
             subjects: [],
             total_mark: row["Total Mark"],
-            grade: row["Overall Grade"],
+           overall_grade: row["Overall Grade"],
             rank: row["Rank"],
             scheduled_at: row["Publish Time"] ? new Date(row["Publish Time"]).toISOString() : null,
             published: true
@@ -490,35 +533,39 @@ const formattedResults = Object.values(grouped);
                 prevSlide() { this.currentSlide = (this.currentSlide - 1 + this.sliderImages.length) % this.sliderImages.length; },
 getSubjectsByClass(className) {
 
+   getSubjectsByClass(className) {
+
     if (className === 'Grade I' || className === 'Grade II') {
+
         return [
-            'English',
-            'Malayalam',
-            'Hindi',
-            'Arabi',
-            'EVS',
-            'GK',
-            'IT',
-            'Maths'
+            { name: 'English', max_mark: 100 },
+            { name: 'Malayalam', max_mark: 100 },
+            { name: 'Hindi', max_mark: 50 },
+            { name: 'Arabi', max_mark: 50 },
+            { name: 'EVS', max_mark: 100 },
+            { name: 'GK', max_mark: 25 },
+            { name: 'IT', max_mark: 25 },
+            { name: 'Maths', max_mark: 100 }
         ];
     }
 
     if (className === 'Grade III' || className === 'Grade IV') {
+
         return [
-            'English',
-            'Malayalam',
-            'Hindi',
-            'Arabi',
-            'Science',
-            'GK',
-            'IT',
-            'Maths',
-            'Social Science'
+            { name: 'English', max_mark: 100 },
+            { name: 'Malayalam', max_mark: 100 },
+            { name: 'Hindi', max_mark: 50 },
+            { name: 'Arabi', max_mark: 50 },
+            { name: 'Science', max_mark: 100 },
+            { name: 'GK', max_mark: 25 },
+            { name: 'IT', max_mark: 25 },
+            { name: 'Maths', max_mark: 100 },
+            { name: 'Social Science', max_mark: 100 }
         ];
     }
 
     return [];
-},
+}
                 calculateGrade(percentage) {
 
     if (percentage >= 90) return 'A+';
@@ -914,7 +961,7 @@ getSubjectsByClass(className) {
                                 </div>
                                 <div class="mt-4 md:mt-0 text-right">
                                     <p class="text-[10px] font-bold text-gray-400 uppercase">Overall Grade</p>
-                                    <p class="text-6xl font-black text-secondary"x-text="activeResult?.grade || activeResult?.overall_grade"></p>
+                                    <p class="text-6xl font-black text-secondary"x-text="activeResult?.overall_grade"></p>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
@@ -939,7 +986,7 @@ getSubjectsByClass(className) {
 <div class="bg-white p-4 rounded-xl shadow text-center">
     <p class="text-xs text-gray-500">Overall Grade</p>
     <p class="text-2xl font-bold text-green-600"
-       x-text="activeResult?.grade || activeResult?.overall_grade"></p>
+       x-text="x-text="activeResult?.overall_grade"></p>
 </div>
                                 <div class="mt-6">
     <h4 class="font-bold text-primary mb-3">Subject Wise Marks</h4>
