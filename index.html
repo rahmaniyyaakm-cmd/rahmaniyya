@@ -314,24 +314,30 @@
                     }
                 },
 
-                showModal(section) {
-                    const typeMap = { 'notifications': 'notification', 'staff': 'staff', 'results': 'result', 'news': 'news', 'gallery': 'gallery', 'clubs': 'club' };
-                    this.modalType = typeMap[section] || section;
-                    this.modalForm = {};
-                    if (section === 'results') {
+               showModal(section) {
 
-    this.modalForm = {
-        subjects: []
+    const typeMap = {
+        'notifications': 'notification',
+        'staff': 'staff',
+        'results': 'result',
+        'news': 'news',
+        'gallery': 'gallery',
+        'clubs': 'club'
     };
-}
-                   
-                    <div class="mt-6">
 
-    <template x-for="(sub,index) in modalForm.subjects" :key="index">
+    this.modalType = typeMap[section] || section;
 
-       
-                    this.modalOpen = true;
-                },
+    this.modalForm = {};
+
+    if (section === 'results') {
+
+        this.modalForm = {
+            subjects: []
+        };
+    }
+
+    this.modalOpen = true;
+},
 
                 async handleModalSubmit() {
                     const tableMap = { 
@@ -391,9 +397,9 @@ payload.overall_grade = this.calculateGrade(percentage);
     ).rank;
 }
 
-                    const { error } = await supabaseClient.from(table).insert([payload]);
-              await this.recalculateRanks(payload.class);
-                        async recalculateRanks(className) {
+          const { error } = await supabaseClient.from(table).insert([payload]);
+
+await this.recalculateRanks(payload.class);
 
     const { data } = await supabaseClient
         .from('results')
@@ -420,7 +426,24 @@ payload.overall_grade = this.calculateGrade(percentage);
                         this.showToast("Saved Successfully!", true);
                     }
                 },
+async recalculateRanks(className) {
 
+    const { data } = await supabaseClient
+        .from('results')
+        .select('*')
+        .eq('class', className)
+        .order('total_mark', { ascending: false });
+
+    if (!data) return;
+
+    for (let i = 0; i < data.length; i++) {
+
+        await supabaseClient
+            .from('results')
+            .update({ rank: i + 1 })
+            .eq('id', data[i].id);
+    }
+},
                 async deleteItem(table, id) {
                     if (confirm("Delete permanently?")) {
                         await supabaseClient.from(table).delete().eq('id', id);
