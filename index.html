@@ -123,6 +123,46 @@
     grade: '',
     rank: ''
 },
+getSubjectsByClass(className) {
+    if (className === 'I' || className === 'II') {
+        return [
+            { name: 'English', max_mark: 100 },
+            { name: 'Malayalam', max_mark: 100 },
+            { name: 'Hindi', max_mark: 100 },
+            { name: 'Arabic', max_mark: 100 },
+            { name: 'EVS', max_mark: 50 },
+            { name: 'GK', max_mark: 50 },
+            { name: 'IT', max_mark: 50 },
+            { name: 'Maths', max_mark: 100 }
+        ];
+    }
+
+    if (className === 'III' || className === 'IV') {
+        return [
+            { name: 'English', max_mark: 100 },
+            { name: 'Malayalam', max_mark: 100 },
+            { name: 'Hindi', max_mark: 100 },
+            { name: 'Arabic', max_mark: 100 },
+            { name: 'Science', max_mark: 100 },
+            { name: 'GK', max_mark: 50 },
+            { name: 'IT', max_mark: 50 },
+            { name: 'Maths', max_mark: 100 },
+            { name: 'Social Science', max_mark: 100 }
+        ];
+    }
+
+    return [];
+},
+
+calculateGrade(percentage) {
+    if (percentage >= 90) return 'A+';
+    if (percentage >= 80) return 'A';
+    if (percentage >= 70) return 'B+';
+    if (percentage >= 60) return 'B';
+    if (percentage >= 50) return 'C+';
+    if (percentage >= 40) return 'C';
+    return 'F';
+},   
                 gallery: [],
 
                 milestones: [
@@ -236,7 +276,30 @@
                         supabaseClient.from('results').select('*').order('id', { ascending: false })
                     ]);
                     this.admissionApplications = admRes.data || [];
-                    this.results = resRes.data || [];
+                this.results = resRes.data || [];
+
+// Auto Rank Calculation
+
+const groupedByClass = {};
+
+this.results.forEach(student => {
+
+    if (!groupedByClass[student.class]) {
+        groupedByClass[student.class] = [];
+    }
+
+    groupedByClass[student.class].push(student);
+});
+
+Object.keys(groupedByClass).forEach(cls => {
+
+    groupedByClass[cls]
+        .sort((a, b) => b.total_mark - a.total_mark)
+        .forEach((student, index) => {
+
+            student.rank = index + 1;
+        });
+});
                 },
 
                 async submitAdmission() {
@@ -329,9 +392,23 @@
 
                     const payload = { ...this.modalForm };
                     if (this.modalType === 'notification') payload.active = true;
-                   if (this.modalType === 'result') {
+                  if (this.modalType === 'result') {
+
     payload.published = true;
-    if (!payload.subjects) payload.subjects = [];
+
+    let totalObtained = 0;
+    let totalMaximum = 0;
+
+    payload.subjects.forEach(sub => {
+        totalObtained += Number(sub.awarded_mark);
+        totalMaximum += Number(sub.max_mark);
+    });
+
+    payload.total_mark = totalObtained;
+
+    payload.percentage = ((totalObtained / totalMaximum) * 100).toFixed(2);
+
+    payload.grade = this.calculateGrade(payload.percentage);
 }
 
                     const { error } = await supabaseClient.from(table).insert([payload]);
@@ -828,10 +905,33 @@ const formattedResults = Object.values(grouped);
     <table class="w-full text-sm border rounded-xl overflow-hidden">
         <thead class="bg-gray-100 text-xs uppercase">
             <tr>
-                <th class="p-2">Subject</th>
-                <th class="p-2">Max</th>
-                <th class="p-2">Mark</th>
-                <th class="p-2">Grade</th>
+                <div class="mt-6 grid grid-cols-2 gap-4">
+
+    <div class="bg-gray-100 p-4 rounded-xl">
+        <p class="text-xs text-gray-500">Total Mark</p>
+        <p class="text-2xl font-bold text-primary"
+           x-text="activeResult.total_mark"></p>
+    </div>
+
+    <div class="bg-gray-100 p-4 rounded-xl">
+        <p class="text-xs text-gray-500">Class Rank</p>
+        <p class="text-2xl font-bold text-secondary"
+           x-text="activeResult.rank"></p>
+    </div>
+
+    <div class="bg-gray-100 p-4 rounded-xl">
+        <p class="text-xs text-gray-500">Percentage</p>
+        <p class="text-2xl font-bold text-primary"
+           x-text="activeResult.percentage + '%'"></p>
+    </div>
+
+    <div class="bg-gray-100 p-4 rounded-xl">
+        <p class="text-xs text-gray-500">Overall Grade</p>
+        <p class="text-2xl font-bold text-secondary"
+           x-text="activeResult.grade"></p>
+    </div>
+
+</div>
             </tr>
         </thead>
         <tbody>
