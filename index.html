@@ -877,10 +877,15 @@ const formattedResults = Object.values(grouped);
                                     <div class="bg-gray-50 p-6 rounded-3xl"><p class="text-4xl font-bold text-primary mb-1">40+</p><p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Expert Staff</p></div>
                                 </div>
                             </div>
-                            <div class="w-full md:w-1/2 relative">
-                                <div class="absolute -top-10 -right-10 w-48 h-48 bg-secondary/10 rounded-full -z-10 animate-pulse"></div>
-                                <img src="https://images.unsplash.com/photo-1544717297-fa154da09f9b?w=800" class="w-full rounded-[3rem] shadow-2xl border-8 border-white">
-                                <div class="absolute bottom-10 left-10 bg-primary p-8 rounded-3xl text-white shadow-2xl">
+<div class="w-full md:w-1/2 relative flex flex-col">                               
+    <div class="absolute -top-10 -right-10 w-48 h-48 bg-secondary/10 rounded-full -z-10 animate-pulse"></div>
+<img src="https://images.unsplash.com/photo-1544717297-fa154da09f9b?w=800"
+     class="w-full rounded-[3rem] shadow-2xl border-8 border-white object-cover">                              
+                                <div class="md:absolute md:bottom-10 md:left-10
+            mt-6 md:mt-0
+            bg-primary p-6 md:p-8
+            rounded-3xl text-white shadow-2xl
+            relative z-10">
                                     <p class="font-bold text-xl mb-1">Mr. Muhammed Sharafudheen K</p>
                                     <p class="text-secondary text-[10px] font-bold uppercase tracking-widest">Principal's Message</p>
                                 </div>
