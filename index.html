@@ -572,9 +572,9 @@ const formattedResults = Object.values(grouped);
 
     <!-- HEADER -->
     <header class="sticky top-0 z-50 glass-nav border-b shadow-sm">
-        <div class="bg-primary text-white py-1.5 text-xs block">
-            <nav class="container mx-auto px-2 py-3 flex flex-col lg:flex-row gap-4 lg:gap-0 justify-between items-center">
-                <div class="flex flex-col sm:flex-row gap-2 sm:gap-6 text-center sm:text-left">
+        <div class="bg-primary text-white py-1.5 text-xs hidden md:block">
+            <div class="container mx-auto px-4 flex justify-between items-center">
+                <div class="flex gap-6">
                     <span class="flex items-center gap-2"><i class="fas fa-phone-alt text-secondary"></i> 04931 2027107</span>
                     <span class="flex items-center gap-2"><i class="fas fa-envelope text-secondary"></i> rahmaniyyaakm@gmail.com</span>
                 </div>
@@ -586,7 +586,7 @@ const formattedResults = Object.values(grouped);
             </div>
         </div>
 
-        <nav class="container mx-auto px-4 py-3 flex justify-between items-center relative">
+        <nav class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center gap-3 cursor-pointer" @click="currentPage = 'home'">
                 <img src="logo_rah.jpg" alt="RPS Logo" class="h-14 w-auto drop-shadow-sm" onerror="this.src='https://via.placeholder.com/60?text=RPS'">
                 <div>
@@ -595,8 +595,8 @@ const formattedResults = Object.values(grouped);
                 </div>
             </div>
 
-<div class="hidden lg:flex gap-8 items-center font-semibold text-sm text-gray-600">                
-    <a href="#" @click="currentPage = 'home'" :class="currentPage === 'home' ? 'text-primary border-b-2 border-primary' : 'hover:text-primary transition-colors'">Home</a>
+            <div class="hidden lg:flex gap-8 items-center font-semibold text-sm text-gray-600">
+                <a href="#" @click="currentPage = 'home'" :class="currentPage === 'home' ? 'text-primary border-b-2 border-primary' : 'hover:text-primary transition-colors'">Home</a>
                 
                 <div class="relative group">
                     <button class="flex items-center gap-1.5 hover:text-primary transition-colors">About Us <i class="fas fa-chevron-down text-[8px]"></i></button>
@@ -632,79 +632,12 @@ const formattedResults = Object.values(grouped);
                 <a href="#" @click="currentPage = 'gallery'" class="hover:text-primary transition-colors">Gallery</a>
             </div>
 
-           <button @click="mobileMenuOpen = !mobileMenuOpen"
-        class="lg:hidden text-primary text-3xl">
-    <i :class="mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'"></i>
-</button>
+            <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden text-primary text-2xl">
                 <i :class="mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'"></i>
             </button>
         </nav>
 
-       <div x-show="mobileMenuOpen"
-     x-transition
-     @click.away="mobileMenuOpen = false"
-     class="lg:hidden bg-white border-t absolute top-full left-0 w-full shadow-2xl z-50">
-
-    <div class="flex flex-col p-6 gap-1 font-semibold text-gray-700">
-
-        <a @click="currentPage='home'; mobileMenuOpen=false"
-           class="py-3 border-b hover:text-primary">
-           Home
-        </a>
-
-        <a @click="currentPage='profile'; mobileMenuOpen=false"
-           class="py-3 border-b hover:text-primary">
-           School Profile
-        </a>
-
-        <a @click="currentPage='vision'; mobileMenuOpen=false"
-           class="py-3 border-b hover:text-primary">
-           Vision & Mission
-        </a>
-
-        <a @click="currentPage='milestones'; mobileMenuOpen=false"
-           class="py-3 border-b hover:text-primary">
-           Milestones
-        </a>
-
-        <a @click="currentPage='kg-section'; mobileMenuOpen=false"
-           class="py-3 border-b hover:text-primary">
-           KG Section
-        </a>
-
-        <a @click="currentPage='primary-section'; mobileMenuOpen=false"
-           class="py-3 border-b hover:text-primary">
-           Primary Section
-        </a>
-
-        <a @click="currentPage='clubs'; mobileMenuOpen=false"
-           class="py-3 border-b hover:text-primary">
-           Student Clubs
-        </a>
-
-        <a @click="currentPage='tutorial'; mobileMenuOpen=false"
-           class="py-3 border-b hover:text-primary">
-           Staff Directory
-        </a>
-
-        <a @click="currentPage='admission'; mobileMenuOpen=false"
-           class="py-3 border-b hover:text-primary">
-           Admission
-        </a>
-
-        <a href="https://rahmaniyya-public-school-akampadam-results.vercel.app/"
-           target="_blank"
-           class="py-3 border-b hover:text-primary">
-           Results
-        </a>
-
-        <a @click="currentPage='gallery'; mobileMenuOpen=false"
-           class="py-3 hover:text-primary">
-           Gallery
-        </a>
-
-    </div>
-</div>
+        <div x-show="mobileMenuOpen" x-transition class="lg:hidden bg-white border-t px-6 py-8 absolute w-full shadow-2xl z-40">
             <div class="flex flex-col gap-5 font-bold text-lg">
                 <a @click="currentPage = 'home'; mobileMenuOpen = false" href="#">Home</a>
                 <a @click="currentPage = 'profile'; mobileMenuOpen = false" href="#">About Us</a>
@@ -750,7 +683,7 @@ const formattedResults = Object.values(grouped);
                                 <div class="max-w-4xl text-white">
                                     <h2 class="text-4xl md:text-7xl font-bold mb-6 drop-shadow-2xl" x-text="slide.title"></h2>
                                     <p class="text-lg md:text-2xl mb-10 opacity-90 max-w-2xl mx-auto font-light" x-text="slide.subtitle"></p>
-                                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                                    <div class="flex flex-col md:flex-row gap-4 justify-center">
                                         <button @click="currentPage = 'admission'" class="bg-secondary text-white px-10 py-4 rounded-full font-bold shadow-2xl hover:bg-yellow-600 transition-all hover:scale-105 uppercase tracking-widest text-sm">Admission 2026-27</button>
                                         <button @click="currentPage = 'profile'" class="bg-white/10 backdrop-blur-md border border-white/20 text-white px-10 py-4 rounded-full font-bold hover:bg-white/20 transition-all">Explore Campus</button>
                                     </div>
@@ -763,7 +696,7 @@ const formattedResults = Object.values(grouped);
                 </section>
 
                 <!-- Featured Cards -->
-               <section class="py-24 container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-10 -mt-16 relative z-10">
+                <section class="py-24 container mx-auto px-4 grid md:grid-cols-3 gap-10 -mt-16 relative z-10">
                     <div class="bg-white p-10 rounded-[2rem] shadow-2xl border-b-8 border-primary card-hover text-center md:text-left">
                         <div class="w-16 h-16 bg-blue-50 text-primary rounded-2xl flex items-center justify-center text-2xl mb-6 mx-auto md:mx-0 shadow-inner"><i class="fas fa-graduation-cap"></i></div>
                         <h3 class="text-2xl font-bold mb-4 text-primary uppercase tracking-tight">Academic Rigor</h3>
@@ -817,7 +750,7 @@ const formattedResults = Object.values(grouped);
                             <h2 class="text-4xl font-bold text-primary mb-3">Latest Campus News</h2>
                             <div class="w-24 h-1.5 bg-secondary mx-auto rounded-full"></div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                        <div class="grid md:grid-cols-3 gap-10">
                             <template x-for="item in news.slice(0, 3)" :key="item.id">
                                 <div class="group bg-gray-50 rounded-3xl overflow-hidden border border-gray-100 hover:shadow-2xl transition-all">
                                     <div class="h-56 bg-gray-200 overflow-hidden">
@@ -1034,7 +967,7 @@ const formattedResults = Object.values(grouped);
                     <h2 class="text-4xl font-bold text-primary mb-2">Media Gallery</h2>
                     <p class="text-gray-500 font-bold uppercase tracking-widest text-[10px]">Capturing Learning Moments</p>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <template x-for="item in gallery" :key="item.id">
                         <div class="aspect-square rounded-[2rem] overflow-hidden group relative shadow-lg">
                             <img :src="item.url" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
@@ -1103,7 +1036,7 @@ const formattedResults = Object.values(grouped);
             <div class="py-24 bg-gray-50 animate-fade-in">
                 <div class="container mx-auto px-4 text-center">
                     <h2 class="text-4xl font-bold text-primary mb-16 uppercase tracking-widest">Our Faculty</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 max-w-7xl mx-auto text-left">
+                    <div class="grid md:grid-cols-4 gap-8 max-w-7xl mx-auto text-left">
                         <template x-for="member in staff" :key="member.id">
                             <div class="bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border hover:scale-105 transition-all group">
                                 <div class="h-64 bg-gray-100 overflow-hidden relative">
