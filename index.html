@@ -624,11 +624,7 @@ const formattedResults = Object.values(grouped);
                 </div>
 
                 <a href="#" @click="currentPage = 'admission'" class="hover:text-primary transition-colors">Admission</a>
-               <a href="https://rahmaniyya-public-school-akampadam-results.vercel.app/" 
-   target="_blank"
-   class="hover:text-primary transition-colors">
-   Results
-</a>
+                <a href="#" @click="currentPage = 'results'" class="hover:text-primary transition-colors">Results</a>
                 <a href="#" @click="currentPage = 'gallery'" class="hover:text-primary transition-colors">Gallery</a>
             </div>
 
@@ -642,10 +638,7 @@ const formattedResults = Object.values(grouped);
                 <a @click="currentPage = 'home'; mobileMenuOpen = false" href="#">Home</a>
                 <a @click="currentPage = 'profile'; mobileMenuOpen = false" href="#">About Us</a>
                 <a @click="currentPage = 'admission'; mobileMenuOpen = false" href="#">Admission</a>
-               <a href="https://rahmaniyya-public-school-akampadam-results.vercel.app/" 
-   target="_blank">
-   Results
-</a>
+                <a @click="currentPage = 'results'; mobileMenuOpen = false" href="#">Results</a>
                 <a @click="currentPage = 'gallery'; mobileMenuOpen = false" href="#">Gallery</a>
             </div>
         </div>
