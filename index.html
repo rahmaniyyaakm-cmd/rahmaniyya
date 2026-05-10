@@ -574,7 +574,7 @@ const formattedResults = Object.values(grouped);
     <header class="sticky top-0 z-50 glass-nav border-b shadow-sm">
         <div class="bg-primary text-white py-1.5 text-xs block">
             <nav class="container mx-auto px-2 py-3 flex flex-col lg:flex-row gap-4 lg:gap-0 justify-between items-center">
-                <div class="flex gap-6">
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-6 text-center sm:text-left">
                     <span class="flex items-center gap-2"><i class="fas fa-phone-alt text-secondary"></i> 04931 2027107</span>
                     <span class="flex items-center gap-2"><i class="fas fa-envelope text-secondary"></i> rahmaniyyaakm@gmail.com</span>
                 </div>
@@ -586,7 +586,7 @@ const formattedResults = Object.values(grouped);
             </div>
         </div>
 
-        <nav class="container mx-auto px-4 py-3 flex justify-between items-center">
+        <nav class="container mx-auto px-4 py-3 flex justify-between items-center relative">
             <div class="flex items-center gap-3 cursor-pointer" @click="currentPage = 'home'">
                 <img src="logo_rah.jpg" alt="RPS Logo" class="h-14 w-auto drop-shadow-sm" onerror="this.src='https://via.placeholder.com/60?text=RPS'">
                 <div>
@@ -595,8 +595,8 @@ const formattedResults = Object.values(grouped);
                 </div>
             </div>
 
-           <div class="flex flex-wrap gap-4 items-center font-semibold text-sm text-gray-600">
-                <a href="#" @click="currentPage = 'home'" :class="currentPage === 'home' ? 'text-primary border-b-2 border-primary' : 'hover:text-primary transition-colors'">Home</a>
+<div class="hidden lg:flex gap-8 items-center font-semibold text-sm text-gray-600">                
+    <a href="#" @click="currentPage = 'home'" :class="currentPage === 'home' ? 'text-primary border-b-2 border-primary' : 'hover:text-primary transition-colors'">Home</a>
                 
                 <div class="relative group">
                     <button class="flex items-center gap-1.5 hover:text-primary transition-colors">About Us <i class="fas fa-chevron-down text-[8px]"></i></button>
@@ -632,12 +632,79 @@ const formattedResults = Object.values(grouped);
                 <a href="#" @click="currentPage = 'gallery'" class="hover:text-primary transition-colors">Gallery</a>
             </div>
 
-           <button @click="mobileMenuOpen = !mobileMenuOpen" class="hidden">
+           <button @click="mobileMenuOpen = !mobileMenuOpen"
+        class="lg:hidden text-primary text-3xl">
+    <i :class="mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'"></i>
+</button>
                 <i :class="mobileMenuOpen ? 'fas fa-times' : 'fas fa-bars'"></i>
             </button>
         </nav>
 
-        <div x-show="mobileMenuOpen" x-transition class="lg:hidden bg-white border-t px-6 py-8 absolute w-full shadow-2xl z-40">
+       <div x-show="mobileMenuOpen"
+     x-transition
+     @click.away="mobileMenuOpen = false"
+     class="lg:hidden bg-white border-t absolute top-full left-0 w-full shadow-2xl z-50">
+
+    <div class="flex flex-col p-6 gap-1 font-semibold text-gray-700">
+
+        <a @click="currentPage='home'; mobileMenuOpen=false"
+           class="py-3 border-b hover:text-primary">
+           Home
+        </a>
+
+        <a @click="currentPage='profile'; mobileMenuOpen=false"
+           class="py-3 border-b hover:text-primary">
+           School Profile
+        </a>
+
+        <a @click="currentPage='vision'; mobileMenuOpen=false"
+           class="py-3 border-b hover:text-primary">
+           Vision & Mission
+        </a>
+
+        <a @click="currentPage='milestones'; mobileMenuOpen=false"
+           class="py-3 border-b hover:text-primary">
+           Milestones
+        </a>
+
+        <a @click="currentPage='kg-section'; mobileMenuOpen=false"
+           class="py-3 border-b hover:text-primary">
+           KG Section
+        </a>
+
+        <a @click="currentPage='primary-section'; mobileMenuOpen=false"
+           class="py-3 border-b hover:text-primary">
+           Primary Section
+        </a>
+
+        <a @click="currentPage='clubs'; mobileMenuOpen=false"
+           class="py-3 border-b hover:text-primary">
+           Student Clubs
+        </a>
+
+        <a @click="currentPage='tutorial'; mobileMenuOpen=false"
+           class="py-3 border-b hover:text-primary">
+           Staff Directory
+        </a>
+
+        <a @click="currentPage='admission'; mobileMenuOpen=false"
+           class="py-3 border-b hover:text-primary">
+           Admission
+        </a>
+
+        <a href="https://rahmaniyya-public-school-akampadam-results.vercel.app/"
+           target="_blank"
+           class="py-3 border-b hover:text-primary">
+           Results
+        </a>
+
+        <a @click="currentPage='gallery'; mobileMenuOpen=false"
+           class="py-3 hover:text-primary">
+           Gallery
+        </a>
+
+    </div>
+</div>
             <div class="flex flex-col gap-5 font-bold text-lg">
                 <a @click="currentPage = 'home'; mobileMenuOpen = false" href="#">Home</a>
                 <a @click="currentPage = 'profile'; mobileMenuOpen = false" href="#">About Us</a>
