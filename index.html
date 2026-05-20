@@ -343,37 +343,36 @@ calculateGrade(percentage) {
     .order('created_at', { ascending: false });
 
 this.gallery = gRes.data && gRes.data.length ? gRes.data : [
-
     {
         id: 1,
         url: 'results.png',
-        caption: 'Rahmaniyya School Campus'
+        caption: 'Exam Results Banner'
     },
-
     {
         id: 2,
         url: 'school.jpeg',
         caption: 'Annual Day Celebration'
     },
-
     {
         id: 3,
         url: 'school1.jpeg',
         caption: 'School Entrance'
     },
-
     {
         id: 4,
         url: 'FLUX.png',
         caption: 'Students Activity'
     },
-
     {
         id: 5,
         url: 'gallery1.jpg',
         caption: 'Classroom Activities'
+    },
+    {
+        id: 6,
+        url: '1001985381.jpg',
+        caption: 'Campus Overview'
     }
-
 ];
                     } catch (e) {
                         console.error("Supabase fetch failed:", e);
