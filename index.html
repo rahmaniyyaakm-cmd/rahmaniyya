@@ -237,7 +237,7 @@ calculateGrade(percentage) {
 
                         const sRes = await supabaseClient.from('staff').select('*');
                         this.staff = sRes.data && sRes.data.length ? sRes.data : [
-                            { id: 1, name: 'Mr. Muhammed Sharafudheen K', designation: 'Principal', qualification: 'BSc,MSc', phone: '+91 79027 86576', email: 'muhammedsharafudheen82@gmail.com', photo_url: 'https://images.unsplash.com/photo-1544717297-fa154da09f9b?q=80&w=400' }
+                            { id: 1, name: 'Mr. Muhammed Sharafudheen K', designation: 'Principal', qualification: 'BSc,MSc', phone: '+91 79027 86576', email: 'muhammedsharafudheen82@gmail.com', photo_url: 'my.jpg' }
                         ];
 
                         const gRes = await supabaseClient.from('gallery').select('*').order('created_at', { ascending: false });
