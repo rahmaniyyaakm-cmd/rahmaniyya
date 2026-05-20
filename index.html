@@ -246,6 +246,15 @@ calculateGrade(percentage) {
   email: 'muhammedsharafudheen82@gmail.com',
   photo_url: 'my.jpg'
 }
+                                              {
+  id: 2,
+  name: 'Mr. Fahmida P',
+  designation: 'KGT',
+  qualification: 'BSc,MSc',
+  phone: '+91 94964 37872',
+  email: 'fahmidazainu71.com',
+  photo_url: 'fah.jpg'
+}
                         ];
 
                         const gRes = await supabaseClient.from('gallery').select('*').order('created_at', { ascending: false });
