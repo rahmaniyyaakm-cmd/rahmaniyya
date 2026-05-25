@@ -738,7 +738,16 @@ const formattedResults = Object.values(grouped);
    class="hover:text-primary transition-colors">
    Results
 </a>
-                <a href="#" @click="currentPage = 'gallery'" class="hover:text-primary transition-colors">Gallery</a>
+
+<a href="https://student.rahmaniyya.org"
+   target="_blank"
+   class="hover:text-primary transition-colors">
+   Student Login
+</a>
+
+<a href="#" @click="currentPage = 'gallery'" class="hover:text-primary transition-colors">
+   Gallery
+</a>
             </div>
 
             <button @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden text-primary text-2xl">
@@ -830,17 +839,25 @@ const formattedResults = Object.values(grouped);
         </a>
 
         <!-- RESULTS -->
-        <a href="https://results.rahmaniyya.org//"
-           target="_blank"
-           class="py-3 border-b font-bold">
-           Results
-        </a>
+        <!-- RESULTS -->
+<a href="https://results.rahmaniyya.org//"
+   target="_blank"
+   class="py-3 border-b font-bold">
+   Results
+</a>
 
-        <!-- GALLERY -->
-        <a @click="currentPage='gallery'; mobileMenuOpen=false"
-           class="py-3 font-bold">
-           Gallery
-        </a>
+<!-- STUDENT LOGIN -->
+<a href="https://student.rahmaniyya.org"
+   target="_blank"
+   class="py-3 border-b font-bold">
+   Student Login
+</a>
+
+<!-- GALLERY -->
+<a @click="currentPage='gallery'; mobileMenuOpen=false"
+   class="py-3 font-bold">
+   Gallery
+</a>
 
     </div>
 </div>
