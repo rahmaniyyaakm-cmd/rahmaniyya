@@ -106,7 +106,8 @@
                 sliderImages: [
                     { id: 1, url: 'school.jpeg', title: 'Excellence in Education', subtitle: 'Nurturing future leaders in a holistic learning environment.' },
                     { id: 2, url: 'school1.jpeg', title: 'Innovative Learning', subtitle: 'Providing state-of-the-art facilities for academic growth.' },
-                    { id: 3, url: 'FLUX.png', title: 'Empowering Minds', subtitle: 'Creating a community of lifelong learners and innovators.' }
+                    { id: 3, url: 'FLUX.png', title: 'Empowering Minds', subtitle: 'Creating a community of lifelong learners and innovators.' },
+                    { id: 4, url: 'BTS.png', title: 'BACK TO SCHOOL', subtitle: 'A New Year, A New Beginning, A New Journey of Learning!' }  
                 ],
                 news: [],
                 clubs: [],
@@ -343,6 +344,11 @@ calculateGrade(percentage) {
     .order('created_at', { ascending: false });
 
 this.gallery = gRes.data && gRes.data.length ? gRes.data : [
+    {
+        id: 16,
+        url: 'BTS.png',
+        caption: 'Exam Results Banner'
+    }, 
     {
         id: 1,
         url: 'results.png',
